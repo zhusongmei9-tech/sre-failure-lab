@@ -61,7 +61,6 @@ jobs:
           import json
           import os
           import subprocess
-          import tempfile
           from pathlib import Path
 
           repo = os.environ['GH_REPO']
@@ -139,14 +138,11 @@ jobs:
 
           在保存了三个下载文件的目录中运行：`sha256sum -c SHA256SUMS`。
           '''
-              with tempfile.TemporaryDirectory() as tmp:
-                  notes_file = Path(tmp) / 'notes.md'
-                  notes_file.write_text(notes, encoding='utf-8')
-                  gh('release', 'create', tag, '--draft', '--verify-tag', '--target', source,
-                     '--title', f'{tag} · SRE 故障演练实验室源码', '--notes-file', str(notes_file))
-              release = find_release()
-              if release is None:
-                  raise RuntimeError('Created draft release was not found')
+              # Use the returned ID: a newly created draft may not appear in the list immediately.
+              release = api(f'{base}/releases', '--method', 'POST',
+                            '-f', f'tag_name={tag}', '-f', f'target_commitish={source}',
+                            '-f', f'name={tag} · SRE 故障演练实验室源码',
+                            '-f', f'body={notes}', '-F', 'draft=true', '-F', 'prerelease=false')
 
           def assets_for(release_id):
               assets = api(f'{base}/releases/{release_id}/assets?per_page=100')
@@ -170,7 +166,9 @@ jobs:
               if name in assets:
                   verify_asset(assets[name])
               elif release['draft']:
-                  gh('release', 'upload', tag, str(folder / name))
+                  gh('api', f'https://uploads.github.com/{base}/releases/{release["id"]}/assets?name={name}',
+                     '--method', 'POST', '-H', 'Content-Type: application/octet-stream',
+                     '--input', str(folder / name))
               else:
                   raise RuntimeError(f'Published release is missing {name}')
 
@@ -181,8 +179,9 @@ jobs:
               verify_asset(asset)
           verify_tag()
           if release['draft']:
-              gh('release', 'edit', tag, '--draft=false', '--latest')
-          published = api(f'{base}/releases/tags/{tag}')
+              api(f'{base}/releases/{release["id"]}', '--method', 'PATCH',
+                  '-F', 'draft=false', '-f', 'make_latest=true')
+          published = api(f'{base}/releases/{release["id"]}')
           if published['draft'] or published['prerelease']:
               raise RuntimeError('Release was not published as a stable version')
           verify_tag()
