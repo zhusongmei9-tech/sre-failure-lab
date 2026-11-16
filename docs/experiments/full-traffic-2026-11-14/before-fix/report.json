@@ -1,0 +1,589 @@
+{
+  "schema_version": 1,
+  "mode": "real",
+  "started_at": "2026-11-14T05:50:09.114144+00:00",
+  "target_rps": 20.0,
+  "workers": 8,
+  "max_seconds": 600,
+  "initial_version": "0.3.1",
+  "initial_slot": "green",
+  "status": "failed",
+  "phases": [
+    {
+      "name": "baseline",
+      "expected_errors": false,
+      "started_at": "2026-11-14T05:50:09.115748+00:00",
+      "error_policy": "zero non-2xx required for requests wholly inside this phase",
+      "ended_at": "2026-11-14T05:50:39.116959+00:00",
+      "duration_seconds": 30.00126364500011,
+      "traffic": {
+        "total": 599,
+        "2xx": 599,
+        "4xx": 0,
+        "5xx": 0,
+        "transport_errors": 0,
+        "status_counts": {
+          "200": 599
+        },
+        "duration_seconds": 30.001,
+        "actual_rps": 19.966,
+        "p50_ms": 5.644,
+        "p95_ms": 7.294,
+        "p99_ms": 10.001,
+        "versions": {
+          "0.3.1": 599
+        },
+        "slots": {
+          "green": 599
+        },
+        "cache": {
+          "MISS": 3,
+          "HIT": 596
+        },
+        "crossing_requests": 0,
+        "noncrossing_samples": 599,
+        "noncrossing_errors": 0
+      }
+    },
+    {
+      "name": "latency",
+      "expected_errors": false,
+      "started_at": "2026-11-14T05:50:39.121975+00:00",
+      "error_policy": "zero non-2xx required for requests wholly inside this phase",
+      "ended_at": "2026-11-14T05:50:54.140534+00:00",
+      "duration_seconds": 15.018578284999876,
+      "traffic": {
+        "total": 300,
+        "2xx": 300,
+        "4xx": 0,
+        "5xx": 0,
+        "transport_errors": 0,
+        "status_counts": {
+          "200": 300
+        },
+        "duration_seconds": 15.019,
+        "actual_rps": 19.975,
+        "p50_ms": 307.014,
+        "p95_ms": 310.666,
+        "p99_ms": 319.15,
+        "versions": {
+          "0.3.1": 300
+        },
+        "slots": {
+          "green": 300
+        },
+        "cache": {
+          "HIT": 300
+        },
+        "crossing_requests": 6,
+        "noncrossing_samples": 294,
+        "noncrossing_errors": 0
+      }
+    },
+    {
+      "name": "cpu",
+      "expected_errors": true,
+      "started_at": "2026-11-14T05:50:54.144120+00:00",
+      "error_policy": "fault observation: failures counted explicitly; recovery must pass independent version/health checks",
+      "ended_at": "2026-11-14T05:51:14.150604+00:00",
+      "duration_seconds": 20.00646371699986,
+      "traffic": {
+        "total": 390,
+        "2xx": 238,
+        "4xx": 143,
+        "5xx": 9,
+        "transport_errors": 0,
+        "status_counts": {
+          "429": 143,
+          "200": 238,
+          "502": 9
+        },
+        "duration_seconds": 20.006,
+        "actual_rps": 19.494,
+        "p50_ms": 13.692,
+        "p95_ms": 72.966,
+        "p99_ms": 1039.361,
+        "versions": {
+          "0.3.1": 381,
+          "unknown": 9
+        },
+        "slots": {
+          "green": 390
+        },
+        "cache": {
+          "unknown": 152,
+          "HIT": 235,
+          "MISS": 3
+        },
+        "crossing_requests": 0,
+        "noncrossing_samples": 390,
+        "noncrossing_errors": 152
+      },
+      "allowed_statuses": [
+        200,
+        429
+      ],
+      "observed_error_count": 152,
+      "cpu_work_observed": true
+    },
+    {
+      "name": "redis_outage",
+      "expected_errors": false,
+      "started_at": "2026-11-14T05:51:14.151189+00:00",
+      "error_policy": "zero non-2xx required for requests wholly inside this phase",
+      "ended_at": "2026-11-14T05:51:40.077931+00:00",
+      "duration_seconds": 25.926759729000423,
+      "traffic": {
+        "total": 519,
+        "2xx": 519,
+        "4xx": 0,
+        "5xx": 0,
+        "transport_errors": 0,
+        "status_counts": {
+          "200": 519
+        },
+        "duration_seconds": 25.927,
+        "actual_rps": 20.018,
+        "p50_ms": 16.452,
+        "p95_ms": 68.564,
+        "p99_ms": 101.592,
+        "versions": {
+          "0.3.1": 519
+        },
+        "slots": {
+          "green": 519
+        },
+        "cache": {
+          "HIT": 209,
+          "BYPASS": 307,
+          "MISS": 3
+        },
+        "crossing_requests": 0,
+        "noncrossing_samples": 519,
+        "noncrossing_errors": 0
+      }
+    },
+    {
+      "name": "api_outage",
+      "expected_errors": true,
+      "started_at": "2026-11-14T05:51:40.080233+00:00",
+      "error_policy": "fault observation: failures counted explicitly; recovery must pass independent version/health checks",
+      "ended_at": "2026-11-14T05:52:05.743622+00:00",
+      "duration_seconds": 25.66338482800029,
+      "traffic": {
+        "total": 276,
+        "2xx": 213,
+        "4xx": 0,
+        "5xx": 63,
+        "transport_errors": 0,
+        "status_counts": {
+          "200": 213,
+          "502": 7,
+          "504": 56
+        },
+        "duration_seconds": 25.663,
+        "actual_rps": 10.755,
+        "p50_ms": 8.518,
+        "p95_ms": 2004.045,
+        "p99_ms": 2006.053,
+        "versions": {
+          "0.3.1": 213,
+          "unknown": 63
+        },
+        "slots": {
+          "green": 276
+        },
+        "cache": {
+          "HIT": 213,
+          "unknown": 63
+        },
+        "crossing_requests": 0,
+        "noncrossing_samples": 276,
+        "noncrossing_errors": 63
+      },
+      "allowed_statuses": [
+        0,
+        200,
+        502,
+        503,
+        504
+      ],
+      "observed_error_count": 63
+    },
+    {
+      "name": "normal_deployment",
+      "expected_errors": false,
+      "started_at": "2026-11-14T05:52:05.746327+00:00",
+      "error_policy": "zero non-2xx required for requests wholly inside this phase",
+      "ended_at": "2026-11-14T05:52:27.452605+00:00",
+      "duration_seconds": 21.706275449999794,
+      "traffic": {
+        "total": 435,
+        "2xx": 435,
+        "4xx": 0,
+        "5xx": 0,
+        "transport_errors": 0,
+        "status_counts": {
+          "200": 435
+        },
+        "duration_seconds": 21.706,
+        "actual_rps": 20.04,
+        "p50_ms": 7.45,
+        "p95_ms": 13.223,
+        "p99_ms": 19.885,
+        "versions": {
+          "0.3.1": 28,
+          "0.3.0": 407
+        },
+        "slots": {
+          "green": 28,
+          "blue": 407
+        },
+        "cache": {
+          "HIT": 435
+        },
+        "crossing_requests": 0,
+        "noncrossing_samples": 435,
+        "noncrossing_errors": 0
+      }
+    },
+    {
+      "name": "manual_rollback",
+      "expected_errors": false,
+      "started_at": "2026-11-14T05:52:27.453825+00:00",
+      "error_policy": "zero non-2xx required for requests wholly inside this phase",
+      "ended_at": "2026-11-14T05:52:29.869024+00:00",
+      "duration_seconds": 2.415219511000032,
+      "traffic": {
+        "total": 48,
+        "2xx": 48,
+        "4xx": 0,
+        "5xx": 0,
+        "transport_errors": 0,
+        "status_counts": {
+          "200": 48
+        },
+        "duration_seconds": 2.415,
+        "actual_rps": 19.874,
+        "p50_ms": 9.577,
+        "p95_ms": 12.895,
+        "p99_ms": 13.146,
+        "versions": {
+          "0.3.0": 1,
+          "0.3.1": 47
+        },
+        "slots": {
+          "blue": 1,
+          "green": 47
+        },
+        "cache": {
+          "HIT": 45,
+          "MISS": 3
+        },
+        "crossing_requests": 0,
+        "noncrossing_samples": 48,
+        "noncrossing_errors": 0
+      }
+    },
+    {
+      "name": "automatic_rollback",
+      "expected_errors": true,
+      "started_at": "2026-11-14T05:52:29.872195+00:00",
+      "error_policy": "fault observation: failures counted explicitly; recovery must pass independent version/health checks",
+      "ended_at": "2026-11-14T05:52:41.835533+00:00",
+      "duration_seconds": 11.963318002000051,
+      "traffic": {
+        "total": 240,
+        "2xx": 39,
+        "4xx": 0,
+        "5xx": 201,
+        "transport_errors": 0,
+        "status_counts": {
+          "200": 39,
+          "500": 201
+        },
+        "duration_seconds": 11.963,
+        "actual_rps": 20.061,
+        "p50_ms": 6.574,
+        "p95_ms": 11.787,
+        "p99_ms": 16.003,
+        "versions": {
+          "0.3.1": 39,
+          "0.3.0": 201
+        },
+        "slots": {
+          "green": 39,
+          "blue": 201
+        },
+        "cache": {
+          "MISS": 1,
+          "HIT": 38,
+          "unknown": 201
+        },
+        "crossing_requests": 0,
+        "noncrossing_samples": 240,
+        "noncrossing_errors": 201
+      },
+      "allowed_statuses": [
+        0,
+        200,
+        500,
+        502,
+        503,
+        504
+      ],
+      "observed_error_count": 201
+    },
+    {
+      "name": "restore_rollback_copy",
+      "expected_errors": false,
+      "started_at": "2026-11-14T05:52:41.836602+00:00",
+      "error_policy": "zero non-2xx required for requests wholly inside this phase",
+      "ended_at": "2026-11-14T05:52:48.964067+00:00",
+      "duration_seconds": 7.127477164000084,
+      "traffic": {
+        "total": 137,
+        "2xx": 137,
+        "4xx": 0,
+        "5xx": 0,
+        "transport_errors": 0,
+        "status_counts": {
+          "200": 137
+        },
+        "duration_seconds": 7.127,
+        "actual_rps": 19.221,
+        "p50_ms": 6.53,
+        "p95_ms": 12.962,
+        "p99_ms": 14.146,
+        "versions": {
+          "0.3.1": 26,
+          "0.3.0": 111
+        },
+        "slots": {
+          "green": 26,
+          "blue": 111
+        },
+        "cache": {
+          "HIT": 137
+        },
+        "crossing_requests": 0,
+        "noncrossing_samples": 137,
+        "noncrossing_errors": 0
+      }
+    },
+    {
+      "name": "final_recovery",
+      "expected_errors": false,
+      "started_at": "2026-11-14T05:52:48.966454+00:00",
+      "error_policy": "zero non-2xx required for requests wholly inside this phase",
+      "ended_at": "2026-11-14T05:53:18.987899+00:00",
+      "duration_seconds": 30.021458455000356,
+      "traffic": {
+        "total": 600,
+        "2xx": 600,
+        "4xx": 0,
+        "5xx": 0,
+        "transport_errors": 0,
+        "status_counts": {
+          "200": 600
+        },
+        "duration_seconds": 30.021,
+        "actual_rps": 19.986,
+        "p50_ms": 7.4,
+        "p95_ms": 12.483,
+        "p99_ms": 13.936,
+        "versions": {
+          "0.3.1": 600
+        },
+        "slots": {
+          "green": 600
+        },
+        "cache": {
+          "HIT": 600
+        },
+        "crossing_requests": 0,
+        "noncrossing_samples": 600,
+        "noncrossing_errors": 0
+      }
+    }
+  ],
+  "checks": [
+    {
+      "name": "redis_self_healing",
+      "fallback_status": 200,
+      "elapsed_seconds": 25.581,
+      "actions": [
+        {
+          "timestamp": "2026-11-14T05:51:29.501923+00:00",
+          "action": "healing_action_accepted",
+          "simulation": false,
+          "details": {
+            "service": "redis",
+            "target": "redis",
+            "incident_id": "f7a356609b4241b583bd47c1f37174f4",
+            "recovered": false,
+            "mode": "real"
+          }
+        }
+      ],
+      "recovery": {
+        "timestamp": "2026-11-14T05:51:39.662251+00:00",
+        "action": "healing_recovery_verified",
+        "simulation": false,
+        "details": {
+          "service": "redis",
+          "incident_id": "f7a356609b4241b583bd47c1f37174f4",
+          "attempts": 1,
+          "reason": "redis_ping_ok",
+          "mode": "real",
+          "locked_out": false,
+          "elapsed_seconds": 20.572563886642456
+        }
+      }
+    },
+    {
+      "name": "api_self_healing",
+      "elapsed_seconds": 25.072,
+      "actions": [
+        {
+          "timestamp": "2026-11-14T05:51:55.074171+00:00",
+          "action": "healing_action_accepted",
+          "simulation": false,
+          "details": {
+            "service": "api",
+            "target": "api-green",
+            "incident_id": "e6cd1ee049214b89bed89dd029c354da",
+            "recovered": false,
+            "mode": "real"
+          }
+        }
+      ],
+      "recovery": {
+        "timestamp": "2026-11-14T05:52:05.276506+00:00",
+        "action": "healing_recovery_verified",
+        "simulation": false,
+        "details": {
+          "service": "api",
+          "incident_id": "e6cd1ee049214b89bed89dd029c354da",
+          "attempts": 1,
+          "reason": "api_business_ok",
+          "mode": "real",
+          "locked_out": false,
+          "elapsed_seconds": 20.543903589248657
+        }
+      }
+    },
+    {
+      "name": "normal_deployment",
+      "release_id": "53c1030a835e4a7093270103e4275682",
+      "version": "0.3.0"
+    },
+    {
+      "name": "manual_rollback",
+      "release_id": "5875e52925524cd7a630a525d1b04db3",
+      "version": "0.3.1"
+    },
+    {
+      "name": "automatic_rollback",
+      "injection": {
+        "injected": true,
+        "release_id": "31773544da7546cc84820b592f80244b",
+        "slot": "blue"
+      },
+      "deployment_exit_code": 1,
+      "recovery_event": {
+        "timestamp": "2026-11-14T05:52:41.817263+00:00",
+        "action": "release_rolled_back",
+        "simulation": false,
+        "details": {
+          "release_id": "31773544da7546cc84820b592f80244b",
+          "active": "green",
+          "version": "0.3.1",
+          "reason": "failed_health_observation_or_switch"
+        }
+      }
+    },
+    {
+      "name": "restore_rollback_copy",
+      "active": "green",
+      "previous": "blue"
+    }
+  ],
+  "final_health": {
+    "healthy": true,
+    "version": "0.3.1",
+    "slot": "green",
+    "previous_slot": "blue",
+    "previous_version": "0.3.0"
+  },
+  "ended_at": "2026-11-14T05:53:19.016014+00:00",
+  "total_seconds": 189.902,
+  "metrics_coverage": {
+    "baseline": {
+      "host_cpu_percent": true,
+      "host_memory_percent": true,
+      "filesystem_percent": true,
+      "api_cpu_cores": true,
+      "api_memory_bytes": true,
+      "cpu_iterations_increase": true,
+      "container_cpu_cores": true,
+      "up": true
+    },
+    "final_recovery": {
+      "host_cpu_percent": true,
+      "host_memory_percent": true,
+      "filesystem_percent": true,
+      "api_cpu_cores": true,
+      "api_memory_bytes": true,
+      "cpu_iterations_increase": true,
+      "container_cpu_cores": true,
+      "up": true
+    }
+  },
+  "validation_failures": [
+    "cpu: unexpected statuses [502]"
+  ],
+  "cleanup_errors": [],
+  "raw_requests": 3545,
+  "metrics_snapshots": 38,
+  "events": 22,
+  "overall": {
+    "total": 3545,
+    "2xx": 3129,
+    "4xx": 143,
+    "5xx": 273,
+    "transport_errors": 0,
+    "status_counts": {
+      "200": 3129,
+      "429": 143,
+      "502": 16,
+      "504": 56,
+      "500": 201
+    },
+    "duration_seconds": 189.902,
+    "actual_rps": 18.668,
+    "p50_ms": 7.51,
+    "p95_ms": 307.679,
+    "p99_ms": 2002.843,
+    "versions": {
+      "0.3.1": 2753,
+      "unknown": 72,
+      "0.3.0": 720
+    },
+    "slots": {
+      "green": 2825,
+      "blue": 720
+    },
+    "cache": {
+      "HIT": 2809,
+      "MISS": 13,
+      "unknown": 416,
+      "BYPASS": 307
+    },
+    "crossing_requests": 6
+  },
+  "phase_attribution": "dispatch; crossing samples remain in totals but are excluded from stable-phase error gate",
+  "fault_duration_note": "Fault windows are requested durations; the real healer may restart API and clear an in-memory CPU fault early. Inspect application_fault snapshots and controller events.",
+  "resource_attribution": "Traffic generator and monitoring run on the same host. Host CPU is not solely API usage; API process/cgroup metrics are recorded separately.",
+  "deadline_scope": "max_seconds bounds the workload; bounded cleanup and worker joins may add time"
+}

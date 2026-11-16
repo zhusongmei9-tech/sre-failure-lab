@@ -1,0 +1,10 @@
+{
+  "scope": "component with fake Redis and simulated controllers; no real deployment",
+  "requests": 6,
+  "successful_requests": 4,
+  "failed_requests": 2,
+  "simulated_recovery_verified": true,
+  "simulated_active_version": "v1",
+  "simulated_failed_release_outcome": "rolled_back",
+  "real_actions_executed": false
+}

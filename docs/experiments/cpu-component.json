@@ -1,0 +1,38 @@
+{
+  "recorded_at": "2026-11-13T06:08:00.894688+00:00",
+  "environment": "Linux-6.18.57-x86_64-with-glibc2.41",
+  "scope": "FastAPI TestClient, mocked Redis, sequential requests; not Docker/full-stack acceptance or a production benchmark",
+  "results": [
+    {
+      "requested_iterations_per_request": 0,
+      "requests": 20,
+      "statuses": {
+        "200": 20
+      },
+      "wall_seconds": 0.03233331900014491,
+      "process_cpu_seconds": 0.032972305000000035,
+      "p95_ms": 1.933603999987099
+    },
+    {
+      "requested_iterations_per_request": 100000,
+      "requests": 20,
+      "statuses": {
+        "200": 20
+      },
+      "wall_seconds": 0.24908233300016036,
+      "process_cpu_seconds": 0.24880713,
+      "p95_ms": 13.991691999990508
+    },
+    {
+      "requested_iterations_per_request": 1000000,
+      "requests": 20,
+      "statuses": {
+        "200": 20
+      },
+      "wall_seconds": 1.9970095969999875,
+      "process_cpu_seconds": 1.9924413789999997,
+      "p95_ms": 107.80235700008234
+    }
+  ],
+  "cleanup_verified": true
+}

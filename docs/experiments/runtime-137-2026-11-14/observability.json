@@ -1,0 +1,914 @@
+{
+  "checked_at": "2026-11-14T05:36:46.283789+00:00",
+  "target": "172.16.58.137",
+  "up": [
+    {
+      "metric": {
+        "__name__": "up",
+        "instance": "api-green:8000",
+        "job": "api_slots",
+        "slot": "green"
+      },
+      "value": [
+        1794634606.285,
+        "1"
+      ]
+    },
+    {
+      "metric": {
+        "__name__": "up",
+        "instance": "api-blue:8000",
+        "job": "api_slots",
+        "slot": "blue"
+      },
+      "value": [
+        1794634606.285,
+        "1"
+      ]
+    },
+    {
+      "metric": {
+        "__name__": "up",
+        "instance": "cadvisor:8080",
+        "job": "cadvisor"
+      },
+      "value": [
+        1794634606.285,
+        "1"
+      ]
+    },
+    {
+      "metric": {
+        "__name__": "up",
+        "instance": "metrics-host:9100",
+        "job": "node"
+      },
+      "value": [
+        1794634606.285,
+        "1"
+      ]
+    },
+    {
+      "metric": {
+        "__name__": "up",
+        "image_id": "sha256:170dfa0d6dcfb676fcf0ccadc577ca0a4d6b9cc3ec995027f1d66da855b3101d",
+        "instance": "api-green:8000",
+        "job": "api",
+        "slot": "green",
+        "version": "0.3.1"
+      },
+      "value": [
+        1794634606.285,
+        "1"
+      ]
+    }
+  ],
+  "panels": [
+    {
+      "dashboard": "sre-failure-lab",
+      "panel": "业务请求速率",
+      "expression": "sum(rate(lab_http_requests_total{job=\"api\"}[1m]))",
+      "series": 1,
+      "finite_series": 1,
+      "sample": [
+        {
+          "metric": {},
+          "value": [
+            1794634606.286,
+            "0.19999999999999998"
+          ]
+        }
+      ]
+    },
+    {
+      "dashboard": "sre-failure-lab",
+      "panel": "业务 5xx 错误率",
+      "expression": "sum(rate(lab_http_requests_total{job=\"api\",status_code=~\"5..\"}[1m])) / (sum(rate(lab_http_requests_total{job=\"api\"}[1m])) > 0)",
+      "series": 1,
+      "finite_series": 1,
+      "sample": [
+        {
+          "metric": {},
+          "value": [
+            1794634606.286,
+            "0"
+          ]
+        }
+      ]
+    },
+    {
+      "dashboard": "sre-failure-lab",
+      "panel": "P95 请求延迟",
+      "expression": "histogram_quantile(0.95, sum by (le) (rate(lab_http_request_duration_seconds_bucket{job=\"api\"}[1m])))",
+      "series": 1,
+      "finite_series": 1,
+      "sample": [
+        {
+          "metric": {},
+          "value": [
+            1794634606.287,
+            "0.00475"
+          ]
+        }
+      ]
+    },
+    {
+      "dashboard": "sre-failure-lab",
+      "panel": "缓存命中率",
+      "expression": "sum(rate(lab_cache_requests_total{job=\"api\",result=\"hit\"}[1m])) / (sum(rate(lab_cache_requests_total{job=\"api\"}[1m])) > 0)",
+      "series": 1,
+      "finite_series": 1,
+      "sample": [
+        {
+          "metric": {},
+          "value": [
+            1794634606.287,
+            "0.9090909090909091"
+          ]
+        }
+      ]
+    },
+    {
+      "dashboard": "sre-failure-lab",
+      "panel": "缓存失败请求 / 秒",
+      "expression": "sum(rate(lab_cache_requests_total{job=\"api\",result=\"error\"}[1m]))",
+      "series": 1,
+      "finite_series": 1,
+      "sample": [
+        {
+          "metric": {},
+          "value": [
+            1794634606.287,
+            "0"
+          ]
+        }
+      ]
+    },
+    {
+      "dashboard": "sre-failure-lab",
+      "panel": "API 指标抓取状态",
+      "expression": "up{job=\"api\"}",
+      "series": 1,
+      "finite_series": 1,
+      "sample": [
+        {
+          "metric": {
+            "__name__": "up",
+            "image_id": "sha256:170dfa0d6dcfb676fcf0ccadc577ca0a4d6b9cc3ec995027f1d66da855b3101d",
+            "instance": "api-green:8000",
+            "job": "api",
+            "slot": "green",
+            "version": "0.3.1"
+          },
+          "value": [
+            1794634606.288,
+            "1"
+          ]
+        }
+      ]
+    },
+    {
+      "dashboard": "sre-failure-lab",
+      "panel": "应用故障状态",
+      "expression": "lab_fault_active{job=\"api\"}",
+      "series": 3,
+      "finite_series": 3,
+      "sample": [
+        {
+          "metric": {
+            "__name__": "lab_fault_active",
+            "image_id": "sha256:170dfa0d6dcfb676fcf0ccadc577ca0a4d6b9cc3ec995027f1d66da855b3101d",
+            "instance": "api-green:8000",
+            "job": "api",
+            "kind": "latency",
+            "slot": "green",
+            "version": "0.3.1"
+          },
+          "value": [
+            1794634606.288,
+            "0"
+          ]
+        },
+        {
+          "metric": {
+            "__name__": "lab_fault_active",
+            "image_id": "sha256:170dfa0d6dcfb676fcf0ccadc577ca0a4d6b9cc3ec995027f1d66da855b3101d",
+            "instance": "api-green:8000",
+            "job": "api",
+            "kind": "errors",
+            "slot": "green",
+            "version": "0.3.1"
+          },
+          "value": [
+            1794634606.288,
+            "0"
+          ]
+        }
+      ]
+    },
+    {
+      "dashboard": "sre-failure-lab",
+      "panel": "降级请求 / 秒",
+      "expression": "sum(rate(lab_fallback_total{job=\"api\"}[1m]))",
+      "series": 1,
+      "finite_series": 1,
+      "sample": [
+        {
+          "metric": {},
+          "value": [
+            1794634606.289,
+            "0"
+          ]
+        }
+      ]
+    },
+    {
+      "dashboard": "sre-failure-lab",
+      "panel": "数据源读取 / 秒",
+      "expression": "sum(rate(lab_source_reads_total{job=\"api\"}[1m]))",
+      "series": 1,
+      "finite_series": 1,
+      "sample": [
+        {
+          "metric": {},
+          "value": [
+            1794634606.289,
+            "0.01818181818181818"
+          ]
+        }
+      ]
+    },
+    {
+      "dashboard": "sre-failure-lab",
+      "panel": "活跃告警",
+      "expression": "ALERTS{alertname=~\"Lab.*\",alertstate=\"firing\"}",
+      "series": 0,
+      "finite_series": 0,
+      "sample": []
+    },
+    {
+      "dashboard": "sre-lab-resources",
+      "panel": "采集器可达性",
+      "expression": "up{job=~\"node|cadvisor|api\"}",
+      "series": 3,
+      "finite_series": 3,
+      "sample": [
+        {
+          "metric": {
+            "__name__": "up",
+            "instance": "cadvisor:8080",
+            "job": "cadvisor"
+          },
+          "value": [
+            1794634606.29,
+            "1"
+          ]
+        },
+        {
+          "metric": {
+            "__name__": "up",
+            "instance": "metrics-host:9100",
+            "job": "node"
+          },
+          "value": [
+            1794634606.29,
+            "1"
+          ]
+        }
+      ]
+    },
+    {
+      "dashboard": "sre-lab-resources",
+      "panel": "业务 P95 延迟",
+      "expression": "histogram_quantile(0.95, sum by (le) (rate(lab_http_request_duration_seconds_bucket{job=\"api\"}[1m])))",
+      "series": 1,
+      "finite_series": 1,
+      "sample": [
+        {
+          "metric": {},
+          "value": [
+            1794634606.29,
+            "0.00475"
+          ]
+        }
+      ]
+    },
+    {
+      "dashboard": "sre-lab-resources",
+      "panel": "主机 CPU 使用率",
+      "expression": "100 * (1 - avg by (instance) (rate(node_cpu_seconds_total{job=\"node\",mode=\"idle\"}[1m])))",
+      "series": 1,
+      "finite_series": 1,
+      "sample": [
+        {
+          "metric": {
+            "instance": "metrics-host:9100"
+          },
+          "value": [
+            1794634606.291,
+            "8.05454545454516"
+          ]
+        }
+      ]
+    },
+    {
+      "dashboard": "sre-lab-resources",
+      "panel": "主机负载",
+      "expression": "node_load1{job=\"node\"}",
+      "series": 1,
+      "finite_series": 1,
+      "sample": [
+        {
+          "metric": {
+            "__name__": "node_load1",
+            "instance": "metrics-host:9100",
+            "job": "node"
+          },
+          "value": [
+            1794634606.291,
+            "0.31"
+          ]
+        }
+      ]
+    },
+    {
+      "dashboard": "sre-lab-resources",
+      "panel": "主机内存使用率",
+      "expression": "100 * (1 - node_memory_MemAvailable_bytes{job=\"node\"} / node_memory_MemTotal_bytes{job=\"node\"})",
+      "series": 1,
+      "finite_series": 1,
+      "sample": [
+        {
+          "metric": {
+            "instance": "metrics-host:9100",
+            "job": "node"
+          },
+          "value": [
+            1794634606.292,
+            "26.957860074448792"
+          ]
+        }
+      ]
+    },
+    {
+      "dashboard": "sre-lab-resources",
+      "panel": "文件系统使用率",
+      "expression": "100 * (1 - node_filesystem_avail_bytes{job=\"node\",fstype!~\"tmpfs|overlay|squashfs\"} / node_filesystem_size_bytes{job=\"node\",fstype!~\"tmpfs|overlay|squashfs\"})",
+      "series": 3,
+      "finite_series": 3,
+      "sample": [
+        {
+          "metric": {
+            "device": "/dev/mapper/rl-root",
+            "fstype": "xfs",
+            "instance": "metrics-host:9100",
+            "job": "node",
+            "mountpoint": "/"
+          },
+          "value": [
+            1794634606.292,
+            "33.769041218637994"
+          ]
+        },
+        {
+          "metric": {
+            "device": "/dev/nvme0n1p1",
+            "fstype": "vfat",
+            "instance": "metrics-host:9100",
+            "job": "node",
+            "mountpoint": "/boot/efi"
+          },
+          "value": [
+            1794634606.292,
+            "1.213338899906069"
+          ]
+        }
+      ]
+    },
+    {
+      "dashboard": "sre-lab-resources",
+      "panel": "inode 使用率",
+      "expression": "100 * (1 - node_filesystem_files_free{job=\"node\",fstype!~\"tmpfs|overlay|squashfs\"} / (node_filesystem_files{job=\"node\",fstype!~\"tmpfs|overlay|squashfs\"} > 0))",
+      "series": 2,
+      "finite_series": 2,
+      "sample": [
+        {
+          "metric": {
+            "device": "/dev/mapper/rl-root",
+            "fstype": "xfs",
+            "instance": "metrics-host:9100",
+            "job": "node",
+            "mountpoint": "/"
+          },
+          "value": [
+            1794634606.293,
+            "1.0433829928885974"
+          ]
+        },
+        {
+          "metric": {
+            "device": "/dev/nvme0n1p2",
+            "fstype": "xfs",
+            "instance": "metrics-host:9100",
+            "job": "node",
+            "mountpoint": "/boot"
+          },
+          "value": [
+            1794634606.293,
+            "0.04405975341796875"
+          ]
+        }
+      ]
+    },
+    {
+      "dashboard": "sre-lab-resources",
+      "panel": "磁盘读吞吐",
+      "expression": "rate(node_disk_read_bytes_total{job=\"node\",device!~\"loop.*|ram.*\"}[1m])",
+      "series": 4,
+      "finite_series": 4,
+      "sample": [
+        {
+          "metric": {
+            "device": "dm-0",
+            "instance": "metrics-host:9100",
+            "job": "node"
+          },
+          "value": [
+            1794634606.293,
+            "175159.85454545452"
+          ]
+        },
+        {
+          "metric": {
+            "device": "dm-1",
+            "instance": "metrics-host:9100",
+            "job": "node"
+          },
+          "value": [
+            1794634606.293,
+            "0"
+          ]
+        }
+      ]
+    },
+    {
+      "dashboard": "sre-lab-resources",
+      "panel": "磁盘写吞吐",
+      "expression": "rate(node_disk_written_bytes_total{job=\"node\",device!~\"loop.*|ram.*\"}[1m])",
+      "series": 4,
+      "finite_series": 4,
+      "sample": [
+        {
+          "metric": {
+            "device": "dm-0",
+            "instance": "metrics-host:9100",
+            "job": "node"
+          },
+          "value": [
+            1794634606.293,
+            "34425.01818181818"
+          ]
+        },
+        {
+          "metric": {
+            "device": "dm-1",
+            "instance": "metrics-host:9100",
+            "job": "node"
+          },
+          "value": [
+            1794634606.293,
+            "0"
+          ]
+        }
+      ]
+    },
+    {
+      "dashboard": "sre-lab-resources",
+      "panel": "磁盘平均读延迟",
+      "expression": "rate(node_disk_read_time_seconds_total{job=\"node\",device!~\"loop.*|ram.*\"}[1m]) / (rate(node_disk_reads_completed_total{job=\"node\",device!~\"loop.*|ram.*\"}[1m]) > 0)",
+      "series": 2,
+      "finite_series": 2,
+      "sample": [
+        {
+          "metric": {
+            "device": "dm-0",
+            "instance": "metrics-host:9100",
+            "job": "node"
+          },
+          "value": [
+            1794634606.294,
+            "0.0008510638297872159"
+          ]
+        },
+        {
+          "metric": {
+            "device": "nvme0n1",
+            "instance": "metrics-host:9100",
+            "job": "node"
+          },
+          "value": [
+            1794634606.294,
+            "0.0006153846153845476"
+          ]
+        }
+      ]
+    },
+    {
+      "dashboard": "sre-lab-resources",
+      "panel": "主机网络接收",
+      "expression": "rate(node_network_receive_bytes_total{job=\"node\",device!~\"lo|veth.*|docker.*|br-.*\"}[1m])",
+      "series": 1,
+      "finite_series": 1,
+      "sample": [
+        {
+          "metric": {
+            "device": "ens160",
+            "instance": "metrics-host:9100",
+            "job": "node"
+          },
+          "value": [
+            1794634606.294,
+            "13212.327272727272"
+          ]
+        }
+      ]
+    },
+    {
+      "dashboard": "sre-lab-resources",
+      "panel": "主机网络发送",
+      "expression": "rate(node_network_transmit_bytes_total{job=\"node\",device!~\"lo|veth.*|docker.*|br-.*\"}[1m])",
+      "series": 1,
+      "finite_series": 1,
+      "sample": [
+        {
+          "metric": {
+            "device": "ens160",
+            "instance": "metrics-host:9100",
+            "job": "node"
+          },
+          "value": [
+            1794634606.295,
+            "1814635.418181818"
+          ]
+        }
+      ]
+    },
+    {
+      "dashboard": "sre-lab-resources",
+      "panel": "Docker cgroup CPU 核数",
+      "expression": "rate(container_cpu_usage_seconds_total{job=\"cadvisor\",id=~\".*/docker/[^/]+|.*/docker-[^/]+[.]scope\"}[1m])",
+      "series": 8,
+      "finite_series": 8,
+      "sample": [
+        {
+          "metric": {
+            "cpu": "total",
+            "id": "/system.slice/docker-1ba1043223410f73908c4228365024342a40b0eb649d5eb1cf350fd6108820a4.scope",
+            "instance": "cadvisor:8080",
+            "job": "cadvisor"
+          },
+          "value": [
+            1794634606.295,
+            "0.010523463553631285"
+          ]
+        },
+        {
+          "metric": {
+            "cpu": "total",
+            "id": "/system.slice/docker-24a955e88f23096a87683edb27d10305335db3b654abf843f8e5dca1b871ba58.scope",
+            "instance": "cadvisor:8080",
+            "job": "cadvisor"
+          },
+          "value": [
+            1794634606.295,
+            "0.011523489530209393"
+          ]
+        }
+      ]
+    },
+    {
+      "dashboard": "sre-lab-resources",
+      "panel": "Docker cgroup 内存工作集",
+      "expression": "container_memory_working_set_bytes{job=\"cadvisor\",id=~\".*/docker/[^/]+|.*/docker-[^/]+[.]scope\"}",
+      "series": 8,
+      "finite_series": 8,
+      "sample": [
+        {
+          "metric": {
+            "__name__": "container_memory_working_set_bytes",
+            "id": "/system.slice/docker-1ba1043223410f73908c4228365024342a40b0eb649d5eb1cf350fd6108820a4.scope",
+            "instance": "cadvisor:8080",
+            "job": "cadvisor"
+          },
+          "value": [
+            1794634606.298,
+            "463847424"
+          ]
+        },
+        {
+          "metric": {
+            "__name__": "container_memory_working_set_bytes",
+            "id": "/system.slice/docker-24a955e88f23096a87683edb27d10305335db3b654abf843f8e5dca1b871ba58.scope",
+            "instance": "cadvisor:8080",
+            "job": "cadvisor"
+          },
+          "value": [
+            1794634606.298,
+            "9494528"
+          ]
+        }
+      ]
+    },
+    {
+      "dashboard": "sre-lab-resources",
+      "panel": "Docker cgroup CPU 限流周期比例",
+      "expression": "100 * rate(container_cpu_cfs_throttled_periods_total{job=\"cadvisor\",id=~\".*/docker/[^/]+|.*/docker-[^/]+[.]scope\"}[1m]) / rate(container_cpu_cfs_periods_total{job=\"cadvisor\",id=~\".*/docker/[^/]+|.*/docker-[^/]+[.]scope\"}[1m])",
+      "series": 2,
+      "finite_series": 2,
+      "sample": [
+        {
+          "metric": {
+            "id": "/system.slice/docker-34e0b50fd6e2fb4366110ccf8adf3e6ef6a10dd626e3c7c22a93186e88e85016.scope",
+            "instance": "cadvisor:8080",
+            "job": "cadvisor"
+          },
+          "value": [
+            1794634606.302,
+            "0.373134328358209"
+          ]
+        },
+        {
+          "metric": {
+            "id": "/system.slice/docker-8cfa5d144597d6660c7d74812463e7f207c1bec019607c118a3949222cd9a13d.scope",
+            "instance": "cadvisor:8080",
+            "job": "cadvisor"
+          },
+          "value": [
+            1794634606.302,
+            "0"
+          ]
+        }
+      ]
+    },
+    {
+      "dashboard": "sre-lab-resources",
+      "panel": "业务 5xx 错误率",
+      "expression": "100 * sum(rate(lab_http_requests_total{job=\"api\",status_code=~\"5..\"}[1m])) / sum(rate(lab_http_requests_total{job=\"api\"}[1m]))",
+      "series": 1,
+      "finite_series": 1,
+      "sample": [
+        {
+          "metric": {},
+          "value": [
+            1794634606.308,
+            "0"
+          ]
+        }
+      ]
+    },
+    {
+      "dashboard": "sre-lab-resources",
+      "panel": "API 进程 CPU 核数",
+      "expression": "rate(process_cpu_seconds_total{job=\"api\"}[1m])",
+      "series": 1,
+      "finite_series": 1,
+      "sample": [
+        {
+          "metric": {
+            "image_id": "sha256:170dfa0d6dcfb676fcf0ccadc577ca0a4d6b9cc3ec995027f1d66da855b3101d",
+            "instance": "api-green:8000",
+            "job": "api",
+            "slot": "green",
+            "version": "0.3.1"
+          },
+          "value": [
+            1794634606.308,
+            "0.004545454545454545"
+          ]
+        }
+      ]
+    },
+    {
+      "dashboard": "sre-lab-resources",
+      "panel": "API 进程驻留内存",
+      "expression": "process_resident_memory_bytes{job=\"api\"}",
+      "series": 1,
+      "finite_series": 1,
+      "sample": [
+        {
+          "metric": {
+            "__name__": "process_resident_memory_bytes",
+            "image_id": "sha256:170dfa0d6dcfb676fcf0ccadc577ca0a4d6b9cc3ec995027f1d66da855b3101d",
+            "instance": "api-green:8000",
+            "job": "api",
+            "slot": "green",
+            "version": "0.3.1"
+          },
+          "value": [
+            1794634606.309,
+            "60010496"
+          ]
+        }
+      ]
+    },
+    {
+      "dashboard": "sre-lab-resources",
+      "panel": "CPU 实验拒绝速率",
+      "expression": "rate(lab_cpu_rejected_total{job=\"api\"}[1m])",
+      "series": 1,
+      "finite_series": 1,
+      "sample": [
+        {
+          "metric": {
+            "image_id": "sha256:170dfa0d6dcfb676fcf0ccadc577ca0a4d6b9cc3ec995027f1d66da855b3101d",
+            "instance": "api-green:8000",
+            "job": "api",
+            "slot": "green",
+            "version": "0.3.1"
+          },
+          "value": [
+            1794634606.309,
+            "0"
+          ]
+        }
+      ]
+    },
+    {
+      "dashboard": "sre-lab-resources",
+      "panel": "CPU 故障是否启用",
+      "expression": "lab_fault_active{job=\"api\",kind=\"cpu\"}",
+      "series": 1,
+      "finite_series": 1,
+      "sample": [
+        {
+          "metric": {
+            "__name__": "lab_fault_active",
+            "image_id": "sha256:170dfa0d6dcfb676fcf0ccadc577ca0a4d6b9cc3ec995027f1d66da855b3101d",
+            "instance": "api-green:8000",
+            "job": "api",
+            "kind": "cpu",
+            "slot": "green",
+            "version": "0.3.1"
+          },
+          "value": [
+            1794634606.309,
+            "0"
+          ]
+        }
+      ]
+    }
+  ],
+  "grafana_dashboards": [
+    {
+      "uid": "sre-failure-lab",
+      "title": "SRE Failure Lab"
+    },
+    {
+      "uid": "sre-lab-resources",
+      "title": "SRE Lab · Resource Correlation"
+    }
+  ],
+  "healer_service": "active",
+  "version": {
+    "version": "0.3.1",
+    "deployment_simulation_is_separate": true
+  },
+  "host": {
+    "count(node_cpu_seconds_total{job=\"node\",mode=\"idle\"})": [
+      {
+        "metric": {},
+        "value": [
+          1794634606.319,
+          "2"
+        ]
+      }
+    ],
+    "node_memory_MemTotal_bytes{job=\"node\"}": [
+      {
+        "metric": {
+          "__name__": "node_memory_MemTotal_bytes",
+          "instance": "metrics-host:9100",
+          "job": "node"
+        },
+        "value": [
+          1794634606.319,
+          "4806344704"
+        ]
+      }
+    ],
+    "node_filesystem_size_bytes{job=\"node\",mountpoint=\"/\"}": [
+      {
+        "metric": {
+          "__name__": "node_filesystem_size_bytes",
+          "device": "/dev/mapper/rl-root",
+          "fstype": "xfs",
+          "instance": "metrics-host:9100",
+          "job": "node",
+          "mountpoint": "/"
+        },
+        "value": [
+          1794634606.319,
+          "17553162240"
+        ]
+      }
+    ],
+    "container_memory_working_set_bytes{job=\"cadvisor\",id=~\".*/docker/[^/]+|.*/docker-[^/]+[.]scope\"}": [
+      {
+        "metric": {
+          "__name__": "container_memory_working_set_bytes",
+          "id": "/system.slice/docker-1ba1043223410f73908c4228365024342a40b0eb649d5eb1cf350fd6108820a4.scope",
+          "instance": "cadvisor:8080",
+          "job": "cadvisor"
+        },
+        "value": [
+          1794634606.32,
+          "463847424"
+        ]
+      },
+      {
+        "metric": {
+          "__name__": "container_memory_working_set_bytes",
+          "id": "/system.slice/docker-24a955e88f23096a87683edb27d10305335db3b654abf843f8e5dca1b871ba58.scope",
+          "instance": "cadvisor:8080",
+          "job": "cadvisor"
+        },
+        "value": [
+          1794634606.32,
+          "9494528"
+        ]
+      },
+      {
+        "metric": {
+          "__name__": "container_memory_working_set_bytes",
+          "id": "/system.slice/docker-34e0b50fd6e2fb4366110ccf8adf3e6ef6a10dd626e3c7c22a93186e88e85016.scope",
+          "instance": "cadvisor:8080",
+          "job": "cadvisor"
+        },
+        "value": [
+          1794634606.32,
+          "50839552"
+        ]
+      },
+      {
+        "metric": {
+          "__name__": "container_memory_working_set_bytes",
+          "id": "/system.slice/docker-59cc8cef63c26f89855ddb0781e6dc6429392d3a4fbde20ae70c98acf2c3fb4d.scope",
+          "instance": "cadvisor:8080",
+          "job": "cadvisor"
+        },
+        "value": [
+          1794634606.32,
+          "46174208"
+        ]
+      },
+      {
+        "metric": {
+          "__name__": "container_memory_working_set_bytes",
+          "id": "/system.slice/docker-8cfa5d144597d6660c7d74812463e7f207c1bec019607c118a3949222cd9a13d.scope",
+          "instance": "cadvisor:8080",
+          "job": "cadvisor"
+        },
+        "value": [
+          1794634606.32,
+          "49930240"
+        ]
+      },
+      {
+        "metric": {
+          "__name__": "container_memory_working_set_bytes",
+          "id": "/system.slice/docker-cc55ab28b1522ba6a45ee9845ac45ae4d2a4b4190f9a7d709aa7daeff9f0a150.scope",
+          "instance": "cadvisor:8080",
+          "job": "cadvisor"
+        },
+        "value": [
+          1794634606.32,
+          "3457024"
+        ]
+      },
+      {
+        "metric": {
+          "__name__": "container_memory_working_set_bytes",
+          "id": "/system.slice/docker-e603ffa4b318cf320a70b092a0b4dbe31f1698862135beb43d5e232553abf43c.scope",
+          "instance": "cadvisor:8080",
+          "job": "cadvisor"
+        },
+        "value": [
+          1794634606.32,
+          "16125952"
+        ]
+      },
+      {
+        "metric": {
+          "__name__": "container_memory_working_set_bytes",
+          "id": "/system.slice/docker-fc32c39df89b5fa51a60389a5b5392e97d48e511e6d3656592a3a0c8cfc7def2.scope",
+          "instance": "cadvisor:8080",
+          "job": "cadvisor"
+        },
+        "value": [
+          1794634606.32,
+          "21872640"
+        ]
+      }
+    ]
+  }
+}

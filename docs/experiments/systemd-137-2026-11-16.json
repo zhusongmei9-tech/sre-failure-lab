@@ -1,0 +1,957 @@
+{
+  "date": "2026-11-16",
+  "host": "172.16.58.137",
+  "service": "sre-lab.service",
+  "initial": {
+    "main": {
+      "MainPID": "0",
+      "Result": "success",
+      "NRestarts": "0",
+      "ExecMainStartTimestampMonotonic": "1381331481",
+      "ExecMainExitTimestampMonotonic": "1388984089",
+      "ActiveState": "active",
+      "SubState": "exited",
+      "UnitFileState": "enabled"
+    },
+    "healer": {
+      "MainPID": "23375",
+      "Result": "success",
+      "NRestarts": "0",
+      "ExecMainStartTimestampMonotonic": "1389010476",
+      "ExecMainExitTimestampMonotonic": "0",
+      "ActiveState": "active",
+      "SubState": "running",
+      "UnitFileState": "static"
+    },
+    "stack": {
+      "active": "green",
+      "previous": "blue",
+      "version": "0.3.1",
+      "phase": "idle",
+      "release_id": "8247412fa202426d91f6eca96bc31623",
+      "expected_services": [
+        "api-blue",
+        "api-green",
+        "cadvisor",
+        "edge",
+        "grafana",
+        "node-exporter",
+        "prometheus",
+        "redis"
+      ],
+      "containers": [
+        {
+          "id": "b311e443a775",
+          "service": "api-blue",
+          "state": "running",
+          "health": "healthy"
+        },
+        {
+          "id": "fc32c39df89b",
+          "service": "cadvisor",
+          "state": "running",
+          "health": "healthy"
+        },
+        {
+          "id": "1ba104322341",
+          "service": "grafana",
+          "state": "running",
+          "health": "none"
+        },
+        {
+          "id": "34e0b50fd6e2",
+          "service": "api-green",
+          "state": "running",
+          "health": "healthy"
+        },
+        {
+          "id": "59cc8cef63c2",
+          "service": "prometheus",
+          "state": "running",
+          "health": "none"
+        },
+        {
+          "id": "e603ffa4b318",
+          "service": "node-exporter",
+          "state": "running",
+          "health": "none"
+        },
+        {
+          "id": "cc55ab28b152",
+          "service": "edge",
+          "state": "running",
+          "health": "none"
+        },
+        {
+          "id": "24a955e88f23",
+          "service": "redis",
+          "state": "running",
+          "health": "healthy"
+        }
+      ],
+      "running_containers": 8,
+      "missing_services": [],
+      "not_running": [],
+      "unexpected_services": [],
+      "all_running": true
+    },
+    "state": {
+      "active": "green",
+      "previous": "blue",
+      "slots": {
+        "blue": {
+          "image": "sre-lab-api:0.3.0",
+          "version": "0.3.0",
+          "image_id": "sha256:b613cd284b40e4555e3f37c79bc78a85c31c7dce536d8963ce16f45de992d4fb"
+        },
+        "green": {
+          "image": "sre-lab-api:0.3.1",
+          "version": "0.3.1",
+          "image_id": "sha256:170dfa0d6dcfb676fcf0ccadc577ca0a4d6b9cc3ec995027f1d66da855b3101d"
+        }
+      },
+      "phase": "idle",
+      "release_id": "8247412fa202426d91f6eca96bc31623",
+      "persistent": true,
+      "simulation": false,
+      "last_outcome": "manually_rolled_back"
+    },
+    "state_sha256": "6d85a874c322f5581a4b1d3077b9db0c439a37b1e04091a76a752d246bebaf22",
+    "healing_budget": {
+      "redis": {
+        "attempts": 0,
+        "locked_out": false,
+        "last_action_at": 1794828697.7767224,
+        "incident_id": "d98e2cb38412498880a930d3b228bfdc"
+      },
+      "api": {
+        "attempts": 0,
+        "locked_out": false,
+        "last_action_at": 1794828703.0507715,
+        "incident_id": "7cd401ddcb75418c8d92fb5e92720c71"
+      }
+    },
+    "volumes": {
+      "sre-lab_runtime-grafana": "2026-11-14T13:25:48+08:00",
+      "sre-lab_runtime-prometheus": "2026-11-14T13:25:48+08:00"
+    },
+    "http": {
+      "version": {
+        "version": "0.3.1",
+        "deployment_simulation_is_separate": true
+      },
+      "product": {
+        "id": 1,
+        "name": "机械键盘",
+        "price_cents": 29900,
+        "currency": "CNY",
+        "stock": 20
+      },
+      "ready": {
+        "status": "ready",
+        "redis": "ok"
+      },
+      "grafana": {
+        "database": "ok",
+        "version": "13.3.0",
+        "commit": "6f8ce3c693b493043ebcd4787566d2b6b118b0f0"
+      },
+      "prometheus_targets": [
+        {
+          "job": "api",
+          "instance": "api-green:8000",
+          "health": "up",
+          "last_error": ""
+        },
+        {
+          "job": "api_slots",
+          "instance": "api-blue:8000",
+          "health": "up",
+          "last_error": ""
+        },
+        {
+          "job": "api_slots",
+          "instance": "api-green:8000",
+          "health": "up",
+          "last_error": ""
+        },
+        {
+          "job": "cadvisor",
+          "instance": "cadvisor:8080",
+          "health": "up",
+          "last_error": ""
+        },
+        {
+          "job": "node",
+          "instance": "metrics-host:9100",
+          "health": "up",
+          "last_error": ""
+        }
+      ]
+    }
+  },
+  "stop": {
+    "snapshot": {
+      "main": {
+        "MainPID": "0",
+        "Result": "success",
+        "NRestarts": "0",
+        "ExecMainStartTimestampMonotonic": "1381331481",
+        "ExecMainExitTimestampMonotonic": "1388984089",
+        "ActiveState": "inactive",
+        "SubState": "dead",
+        "UnitFileState": "enabled"
+      },
+      "healer": {
+        "MainPID": "0",
+        "Result": "success",
+        "NRestarts": "0",
+        "ExecMainStartTimestampMonotonic": "1389010476",
+        "ExecMainExitTimestampMonotonic": "1461221965",
+        "ActiveState": "inactive",
+        "SubState": "dead",
+        "UnitFileState": "static"
+      },
+      "stack": {
+        "active": "green",
+        "previous": "blue",
+        "version": "0.3.1",
+        "phase": "idle",
+        "release_id": "8247412fa202426d91f6eca96bc31623",
+        "expected_services": [
+          "api-blue",
+          "api-green",
+          "cadvisor",
+          "edge",
+          "grafana",
+          "node-exporter",
+          "prometheus",
+          "redis"
+        ],
+        "containers": [
+          {
+            "id": "b311e443a775",
+            "service": "api-blue",
+            "state": "exited",
+            "health": "unhealthy"
+          },
+          {
+            "id": "fc32c39df89b",
+            "service": "cadvisor",
+            "state": "exited",
+            "health": "unhealthy"
+          },
+          {
+            "id": "1ba104322341",
+            "service": "grafana",
+            "state": "exited",
+            "health": "none"
+          },
+          {
+            "id": "34e0b50fd6e2",
+            "service": "api-green",
+            "state": "exited",
+            "health": "unhealthy"
+          },
+          {
+            "id": "59cc8cef63c2",
+            "service": "prometheus",
+            "state": "exited",
+            "health": "none"
+          },
+          {
+            "id": "e603ffa4b318",
+            "service": "node-exporter",
+            "state": "exited",
+            "health": "none"
+          },
+          {
+            "id": "cc55ab28b152",
+            "service": "edge",
+            "state": "exited",
+            "health": "none"
+          },
+          {
+            "id": "24a955e88f23",
+            "service": "redis",
+            "state": "exited",
+            "health": "unhealthy"
+          }
+        ],
+        "running_containers": 0,
+        "missing_services": [],
+        "not_running": [
+          "api-blue",
+          "api-green",
+          "cadvisor",
+          "edge",
+          "grafana",
+          "node-exporter",
+          "prometheus",
+          "redis"
+        ],
+        "unexpected_services": [],
+        "all_running": false
+      },
+      "state": {
+        "active": "green",
+        "previous": "blue",
+        "slots": {
+          "blue": {
+            "image": "sre-lab-api:0.3.0",
+            "version": "0.3.0",
+            "image_id": "sha256:b613cd284b40e4555e3f37c79bc78a85c31c7dce536d8963ce16f45de992d4fb"
+          },
+          "green": {
+            "image": "sre-lab-api:0.3.1",
+            "version": "0.3.1",
+            "image_id": "sha256:170dfa0d6dcfb676fcf0ccadc577ca0a4d6b9cc3ec995027f1d66da855b3101d"
+          }
+        },
+        "phase": "idle",
+        "release_id": "8247412fa202426d91f6eca96bc31623",
+        "persistent": true,
+        "simulation": false,
+        "last_outcome": "manually_rolled_back"
+      },
+      "state_sha256": "6d85a874c322f5581a4b1d3077b9db0c439a37b1e04091a76a752d246bebaf22",
+      "healing_budget": {
+        "redis": {
+          "attempts": 0,
+          "locked_out": false,
+          "last_action_at": 1794828697.7767224,
+          "incident_id": "d98e2cb38412498880a930d3b228bfdc"
+        },
+        "api": {
+          "attempts": 0,
+          "locked_out": false,
+          "last_action_at": 1794828703.0507715,
+          "incident_id": "7cd401ddcb75418c8d92fb5e92720c71"
+        }
+      },
+      "volumes": {
+        "sre-lab_runtime-grafana": "2026-11-14T13:25:48+08:00",
+        "sre-lab_runtime-prometheus": "2026-11-14T13:25:48+08:00"
+      }
+    },
+    "checks": {
+      "main_stopped": true,
+      "healer_stopped": true,
+      "zero_running": true,
+      "release_preserved": true,
+      "healing_budget_preserved": true,
+      "volumes_preserved": true
+    }
+  },
+  "start": {
+    "snapshot": {
+      "main": {
+        "MainPID": "0",
+        "Result": "success",
+        "NRestarts": "0",
+        "ExecMainStartTimestampMonotonic": "1484741423",
+        "ExecMainExitTimestampMonotonic": "1488601173",
+        "ActiveState": "active",
+        "SubState": "exited",
+        "UnitFileState": "enabled"
+      },
+      "healer": {
+        "MainPID": "26457",
+        "Result": "success",
+        "NRestarts": "0",
+        "ExecMainStartTimestampMonotonic": "1488620669",
+        "ExecMainExitTimestampMonotonic": "0",
+        "ActiveState": "active",
+        "SubState": "running",
+        "UnitFileState": "static"
+      },
+      "stack": {
+        "active": "green",
+        "previous": "blue",
+        "version": "0.3.1",
+        "phase": "idle",
+        "release_id": "8247412fa202426d91f6eca96bc31623",
+        "expected_services": [
+          "api-blue",
+          "api-green",
+          "cadvisor",
+          "edge",
+          "grafana",
+          "node-exporter",
+          "prometheus",
+          "redis"
+        ],
+        "containers": [
+          {
+            "id": "b311e443a775",
+            "service": "api-blue",
+            "state": "running",
+            "health": "healthy"
+          },
+          {
+            "id": "fc32c39df89b",
+            "service": "cadvisor",
+            "state": "running",
+            "health": "healthy"
+          },
+          {
+            "id": "1ba104322341",
+            "service": "grafana",
+            "state": "running",
+            "health": "none"
+          },
+          {
+            "id": "34e0b50fd6e2",
+            "service": "api-green",
+            "state": "running",
+            "health": "healthy"
+          },
+          {
+            "id": "59cc8cef63c2",
+            "service": "prometheus",
+            "state": "running",
+            "health": "none"
+          },
+          {
+            "id": "e603ffa4b318",
+            "service": "node-exporter",
+            "state": "running",
+            "health": "none"
+          },
+          {
+            "id": "cc55ab28b152",
+            "service": "edge",
+            "state": "running",
+            "health": "none"
+          },
+          {
+            "id": "24a955e88f23",
+            "service": "redis",
+            "state": "running",
+            "health": "healthy"
+          }
+        ],
+        "running_containers": 8,
+        "missing_services": [],
+        "not_running": [],
+        "unexpected_services": [],
+        "all_running": true
+      },
+      "state": {
+        "active": "green",
+        "previous": "blue",
+        "slots": {
+          "blue": {
+            "image": "sre-lab-api:0.3.0",
+            "version": "0.3.0",
+            "image_id": "sha256:b613cd284b40e4555e3f37c79bc78a85c31c7dce536d8963ce16f45de992d4fb"
+          },
+          "green": {
+            "image": "sre-lab-api:0.3.1",
+            "version": "0.3.1",
+            "image_id": "sha256:170dfa0d6dcfb676fcf0ccadc577ca0a4d6b9cc3ec995027f1d66da855b3101d"
+          }
+        },
+        "phase": "idle",
+        "release_id": "8247412fa202426d91f6eca96bc31623",
+        "persistent": true,
+        "simulation": false,
+        "last_outcome": "manually_rolled_back"
+      },
+      "state_sha256": "6d85a874c322f5581a4b1d3077b9db0c439a37b1e04091a76a752d246bebaf22",
+      "healing_budget": {
+        "redis": {
+          "attempts": 0,
+          "locked_out": false,
+          "last_action_at": 1794828697.7767224,
+          "incident_id": "d98e2cb38412498880a930d3b228bfdc"
+        },
+        "api": {
+          "attempts": 0,
+          "locked_out": false,
+          "last_action_at": 1794828703.0507715,
+          "incident_id": "7cd401ddcb75418c8d92fb5e92720c71"
+        }
+      },
+      "volumes": {
+        "sre-lab_runtime-grafana": "2026-11-14T13:25:48+08:00",
+        "sre-lab_runtime-prometheus": "2026-11-14T13:25:48+08:00"
+      },
+      "http": {
+        "version": {
+          "version": "0.3.1",
+          "deployment_simulation_is_separate": true
+        },
+        "product": {
+          "id": 1,
+          "name": "机械键盘",
+          "price_cents": 29900,
+          "currency": "CNY",
+          "stock": 20
+        },
+        "ready": {
+          "status": "ready",
+          "redis": "ok"
+        },
+        "grafana": {
+          "database": "ok",
+          "version": "13.3.0",
+          "commit": "6f8ce3c693b493043ebcd4787566d2b6b118b0f0"
+        },
+        "prometheus_targets": [
+          {
+            "job": "api",
+            "instance": "api-green:8000",
+            "health": "up",
+            "last_error": ""
+          },
+          {
+            "job": "api_slots",
+            "instance": "api-green:8000",
+            "health": "up",
+            "last_error": ""
+          },
+          {
+            "job": "api_slots",
+            "instance": "api-blue:8000",
+            "health": "up",
+            "last_error": ""
+          },
+          {
+            "job": "cadvisor",
+            "instance": "cadvisor:8080",
+            "health": "up",
+            "last_error": ""
+          },
+          {
+            "job": "node",
+            "instance": "metrics-host:9100",
+            "health": "up",
+            "last_error": ""
+          }
+        ]
+      }
+    },
+    "checks": {
+      "main_active": true,
+      "healer_running": true,
+      "all_8_running": true,
+      "release_preserved": true,
+      "healing_budget_preserved": true,
+      "volumes_preserved": true,
+      "healer_starts_after_stack": true,
+      "all_prometheus_targets_up": true,
+      "business_ok": true,
+      "grafana_ok": true
+    }
+  },
+  "restart": {
+    "snapshot": {
+      "main": {
+        "MainPID": "0",
+        "Result": "success",
+        "NRestarts": "0",
+        "ExecMainStartTimestampMonotonic": "1537841469",
+        "ExecMainExitTimestampMonotonic": "1541640304",
+        "ActiveState": "active",
+        "SubState": "exited",
+        "UnitFileState": "enabled"
+      },
+      "healer": {
+        "MainPID": "28871",
+        "Result": "success",
+        "NRestarts": "0",
+        "ExecMainStartTimestampMonotonic": "1541670296",
+        "ExecMainExitTimestampMonotonic": "0",
+        "ActiveState": "active",
+        "SubState": "running",
+        "UnitFileState": "static"
+      },
+      "stack": {
+        "active": "green",
+        "previous": "blue",
+        "version": "0.3.1",
+        "phase": "idle",
+        "release_id": "8247412fa202426d91f6eca96bc31623",
+        "expected_services": [
+          "api-blue",
+          "api-green",
+          "cadvisor",
+          "edge",
+          "grafana",
+          "node-exporter",
+          "prometheus",
+          "redis"
+        ],
+        "containers": [
+          {
+            "id": "b311e443a775",
+            "service": "api-blue",
+            "state": "running",
+            "health": "healthy"
+          },
+          {
+            "id": "fc32c39df89b",
+            "service": "cadvisor",
+            "state": "running",
+            "health": "starting"
+          },
+          {
+            "id": "1ba104322341",
+            "service": "grafana",
+            "state": "running",
+            "health": "none"
+          },
+          {
+            "id": "34e0b50fd6e2",
+            "service": "api-green",
+            "state": "running",
+            "health": "healthy"
+          },
+          {
+            "id": "59cc8cef63c2",
+            "service": "prometheus",
+            "state": "running",
+            "health": "none"
+          },
+          {
+            "id": "e603ffa4b318",
+            "service": "node-exporter",
+            "state": "running",
+            "health": "none"
+          },
+          {
+            "id": "cc55ab28b152",
+            "service": "edge",
+            "state": "running",
+            "health": "none"
+          },
+          {
+            "id": "24a955e88f23",
+            "service": "redis",
+            "state": "running",
+            "health": "healthy"
+          }
+        ],
+        "running_containers": 8,
+        "missing_services": [],
+        "not_running": [],
+        "unexpected_services": [],
+        "all_running": true
+      },
+      "state": {
+        "active": "green",
+        "previous": "blue",
+        "slots": {
+          "blue": {
+            "image": "sre-lab-api:0.3.0",
+            "version": "0.3.0",
+            "image_id": "sha256:b613cd284b40e4555e3f37c79bc78a85c31c7dce536d8963ce16f45de992d4fb"
+          },
+          "green": {
+            "image": "sre-lab-api:0.3.1",
+            "version": "0.3.1",
+            "image_id": "sha256:170dfa0d6dcfb676fcf0ccadc577ca0a4d6b9cc3ec995027f1d66da855b3101d"
+          }
+        },
+        "phase": "idle",
+        "release_id": "8247412fa202426d91f6eca96bc31623",
+        "persistent": true,
+        "simulation": false,
+        "last_outcome": "manually_rolled_back"
+      },
+      "state_sha256": "6d85a874c322f5581a4b1d3077b9db0c439a37b1e04091a76a752d246bebaf22",
+      "healing_budget": {
+        "redis": {
+          "attempts": 0,
+          "locked_out": false,
+          "last_action_at": 1794828697.7767224,
+          "incident_id": "d98e2cb38412498880a930d3b228bfdc"
+        },
+        "api": {
+          "attempts": 0,
+          "locked_out": false,
+          "last_action_at": 1794828703.0507715,
+          "incident_id": "7cd401ddcb75418c8d92fb5e92720c71"
+        }
+      },
+      "volumes": {
+        "sre-lab_runtime-grafana": "2026-11-14T13:25:48+08:00",
+        "sre-lab_runtime-prometheus": "2026-11-14T13:25:48+08:00"
+      },
+      "http": {
+        "version": {
+          "version": "0.3.1",
+          "deployment_simulation_is_separate": true
+        },
+        "product": {
+          "id": 1,
+          "name": "机械键盘",
+          "price_cents": 29900,
+          "currency": "CNY",
+          "stock": 20
+        },
+        "ready": {
+          "status": "ready",
+          "redis": "ok"
+        },
+        "grafana": {
+          "database": "ok",
+          "version": "13.3.0",
+          "commit": "6f8ce3c693b493043ebcd4787566d2b6b118b0f0"
+        },
+        "prometheus_targets": [
+          {
+            "job": "api",
+            "instance": "api-green:8000",
+            "health": "up",
+            "last_error": ""
+          },
+          {
+            "job": "api_slots",
+            "instance": "api-blue:8000",
+            "health": "up",
+            "last_error": ""
+          },
+          {
+            "job": "api_slots",
+            "instance": "api-green:8000",
+            "health": "up",
+            "last_error": ""
+          },
+          {
+            "job": "cadvisor",
+            "instance": "cadvisor:8080",
+            "health": "up",
+            "last_error": ""
+          },
+          {
+            "job": "node",
+            "instance": "metrics-host:9100",
+            "health": "up",
+            "last_error": ""
+          }
+        ]
+      }
+    },
+    "checks": {
+      "main_active": true,
+      "healer_running": true,
+      "healer_restarted": true,
+      "all_8_running": true,
+      "release_preserved": true,
+      "healing_budget_preserved": true,
+      "volumes_preserved": true,
+      "healer_starts_after_stack": true,
+      "all_prometheus_targets_up": true,
+      "business_ok": true,
+      "grafana_ok": true
+    }
+  },
+  "healer_crash_recovery": {
+    "snapshot": {
+      "main": {
+        "MainPID": "0",
+        "Result": "success",
+        "NRestarts": "0",
+        "ExecMainStartTimestampMonotonic": "1537841469",
+        "ExecMainExitTimestampMonotonic": "1541640304",
+        "ActiveState": "active",
+        "SubState": "exited",
+        "UnitFileState": "enabled"
+      },
+      "healer": {
+        "MainPID": "29341",
+        "Result": "success",
+        "NRestarts": "1",
+        "ExecMainStartTimestampMonotonic": "1560590649",
+        "ExecMainExitTimestampMonotonic": "0",
+        "ActiveState": "active",
+        "SubState": "running",
+        "UnitFileState": "static"
+      },
+      "stack": {
+        "active": "green",
+        "previous": "blue",
+        "version": "0.3.1",
+        "phase": "idle",
+        "release_id": "8247412fa202426d91f6eca96bc31623",
+        "expected_services": [
+          "api-blue",
+          "api-green",
+          "cadvisor",
+          "edge",
+          "grafana",
+          "node-exporter",
+          "prometheus",
+          "redis"
+        ],
+        "containers": [
+          {
+            "id": "b311e443a775",
+            "service": "api-blue",
+            "state": "running",
+            "health": "healthy"
+          },
+          {
+            "id": "fc32c39df89b",
+            "service": "cadvisor",
+            "state": "running",
+            "health": "healthy"
+          },
+          {
+            "id": "1ba104322341",
+            "service": "grafana",
+            "state": "running",
+            "health": "none"
+          },
+          {
+            "id": "34e0b50fd6e2",
+            "service": "api-green",
+            "state": "running",
+            "health": "healthy"
+          },
+          {
+            "id": "59cc8cef63c2",
+            "service": "prometheus",
+            "state": "running",
+            "health": "none"
+          },
+          {
+            "id": "e603ffa4b318",
+            "service": "node-exporter",
+            "state": "running",
+            "health": "none"
+          },
+          {
+            "id": "cc55ab28b152",
+            "service": "edge",
+            "state": "running",
+            "health": "none"
+          },
+          {
+            "id": "24a955e88f23",
+            "service": "redis",
+            "state": "running",
+            "health": "healthy"
+          }
+        ],
+        "running_containers": 8,
+        "missing_services": [],
+        "not_running": [],
+        "unexpected_services": [],
+        "all_running": true
+      },
+      "state": {
+        "active": "green",
+        "previous": "blue",
+        "slots": {
+          "blue": {
+            "image": "sre-lab-api:0.3.0",
+            "version": "0.3.0",
+            "image_id": "sha256:b613cd284b40e4555e3f37c79bc78a85c31c7dce536d8963ce16f45de992d4fb"
+          },
+          "green": {
+            "image": "sre-lab-api:0.3.1",
+            "version": "0.3.1",
+            "image_id": "sha256:170dfa0d6dcfb676fcf0ccadc577ca0a4d6b9cc3ec995027f1d66da855b3101d"
+          }
+        },
+        "phase": "idle",
+        "release_id": "8247412fa202426d91f6eca96bc31623",
+        "persistent": true,
+        "simulation": false,
+        "last_outcome": "manually_rolled_back"
+      },
+      "state_sha256": "6d85a874c322f5581a4b1d3077b9db0c439a37b1e04091a76a752d246bebaf22",
+      "healing_budget": {
+        "redis": {
+          "attempts": 0,
+          "locked_out": false,
+          "last_action_at": 1794828697.7767224,
+          "incident_id": "d98e2cb38412498880a930d3b228bfdc"
+        },
+        "api": {
+          "attempts": 0,
+          "locked_out": false,
+          "last_action_at": 1794828703.0507715,
+          "incident_id": "7cd401ddcb75418c8d92fb5e92720c71"
+        }
+      },
+      "volumes": {
+        "sre-lab_runtime-grafana": "2026-11-14T13:25:48+08:00",
+        "sre-lab_runtime-prometheus": "2026-11-14T13:25:48+08:00"
+      },
+      "http": {
+        "version": {
+          "version": "0.3.1",
+          "deployment_simulation_is_separate": true
+        },
+        "product": {
+          "id": 1,
+          "name": "机械键盘",
+          "price_cents": 29900,
+          "currency": "CNY",
+          "stock": 20
+        },
+        "ready": {
+          "status": "ready",
+          "redis": "ok"
+        },
+        "grafana": {
+          "database": "ok",
+          "version": "13.3.0",
+          "commit": "6f8ce3c693b493043ebcd4787566d2b6b118b0f0"
+        },
+        "prometheus_targets": [
+          {
+            "job": "api",
+            "instance": "api-green:8000",
+            "health": "up",
+            "last_error": ""
+          },
+          {
+            "job": "api_slots",
+            "instance": "api-blue:8000",
+            "health": "up",
+            "last_error": ""
+          },
+          {
+            "job": "api_slots",
+            "instance": "api-green:8000",
+            "health": "up",
+            "last_error": ""
+          },
+          {
+            "job": "cadvisor",
+            "instance": "cadvisor:8080",
+            "health": "up",
+            "last_error": ""
+          },
+          {
+            "job": "node",
+            "instance": "metrics-host:9100",
+            "health": "up",
+            "last_error": ""
+          }
+        ]
+      }
+    },
+    "checks": {
+      "main_remains_active": true,
+      "healer_automatically_restarted": true,
+      "all_8_running": true,
+      "release_preserved": true,
+      "healing_budget_preserved": true,
+      "prometheus_up": true
+    }
+  },
+  "checks": {
+    "python_tests": "207 passed, real Redis enabled, no skips",
+    "ruff": "passed",
+    "shell_syntax": "passed",
+    "systemd_analyze_verify": "passed on systemd 252",
+    "vm_reboot": "not performed; enabled boot configuration verified",
+    "startup_failure": "covered by local executor tests; not fault-injected into the remote unit"
+  }
+}

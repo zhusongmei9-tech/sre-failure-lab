@@ -1,0 +1,33 @@
+{
+  "seconds_per_mode": 3,
+  "target_rps": 10,
+  "results": [
+    {
+      "requests": 30,
+      "success_rate": 0.0,
+      "actual_rps": 9.663584194664505,
+      "p95_ms": 205.77424997463822,
+      "status_counts": {
+        "503": 30
+      },
+      "mode": "baseline",
+      "started_at": "2026-11-12T13:56:58.517971+00:00",
+      "source_reads": 0.0
+    },
+    {
+      "requests": 30,
+      "success_rate": 1.0,
+      "actual_rps": 9.649673173179105,
+      "p95_ms": 204.11487499950454,
+      "status_counts": {
+        "200": 30
+      },
+      "mode": "fallback",
+      "started_at": "2026-11-12T13:57:17.717989+00:00",
+      "source_reads": 30.0
+    }
+  ],
+  "environment": "macOS native FastAPI + real Redis 7.4.2; same comparison code with local process transport, not Docker",
+  "redis_timeout_seconds": 0.2,
+  "redis_pause_auto_resume": "PASS"
+}

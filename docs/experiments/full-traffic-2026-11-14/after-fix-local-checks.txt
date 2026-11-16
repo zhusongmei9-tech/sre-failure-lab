@@ -1,0 +1,58 @@
+SRE Failure Lab — local validation after HTTP 429 healing fix
+Validation date: 2026-11-14 (Asia/Shanghai)
+Scope: local workspace only; no SSH or remote runtime operations by this verifier.
+This report records the already completed checks. Tests were not rerun to create it.
+The earlier local-checks.txt and its raw-output files remain unchanged.
+
+Fix under verification
+- A healthy liveness endpoint followed by product HTTP 429 is classified as api_overloaded.
+- Overload remains healthy=false and does not trigger a restart.
+- Consecutive failure/success counts clear on overload; repair attempts, cooldown and lockout remain intact.
+- Liveness failures, product HTTP 500 and timeouts retain the normal failure/recovery behavior.
+- Existing Redis dependency suppression and non-idle Redis-only recovery remain covered.
+
+SUMMARY
+Targeted real-healing tests: 26 passed, 0 failed, 0 skipped; 2.11 seconds.
+Full pytest suite: 189 passed, 0 failed, 0 skipped; 8.05 seconds.
+Real Redis integration included using Redis 7.4.2.
+Repository Ruff check: PASS.
+Console DOM tests: 4 passed, 0 failed, 0 skipped, 0 cancelled.
+Python compileall: PASS (quiet command produced no output).
+All recorded commands exited with code 0.
+
+TARGETED COMMAND AND CAPTURED RESULT
+Command: uv run --locked pytest -q tests/test_real_healing.py
+Exit: 0
+..........................                                               [100%]
+26 passed in 2.11s
+
+FULL COMMANDS AND CAPTURED RESULTS
+Command: TEST_REDIS_SERVER=/tmp/sre-lab-redis.Rq7JmX/redis-7.4.2/src/redis-server uv run --locked pytest -q -ra
+Exit: 0
+........................................................................ [ 38%]
+........................................................................ [ 76%]
+.............................................                            [100%]
+189 passed in 8.05s
+
+Command: uv run --locked ruff check .
+Exit: 0
+All checks passed!
+
+Command: node --test tests/console.test.cjs
+Exit: 0
+✔ auth failure clears stale content; success stays read-only and clears token input (32.64275ms)
+✔ late response after disconnect cannot repopulate snapshot (0.6155ms)
+✔ newer login wins over older response (0.816959ms)
+✔ dynamic values use text nodes, no credential persistence APIs (0.235459ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 75.936417
+
+Command: uv run --locked python -m compileall -q app scripts tests loadgen ops
+Exit: 0
+(no output)

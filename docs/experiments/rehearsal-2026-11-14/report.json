@@ -1,0 +1,184 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-11-14T04:27:31.824058+00:00",
+  "validation_scope": "component",
+  "window": {
+    "kind": "provided_interval",
+    "start": "2026-11-14T04:27:31.747191+00:00",
+    "end": "2026-11-14T04:27:31.823351+00:00"
+  },
+  "slo": {
+    "definition": "2xx / all completed product HTTP requests; includes 429 as failure",
+    "target": 0.99,
+    "status_counts": {
+      "200": 4,
+      "404": 0,
+      "422": 0,
+      "429": 0,
+      "500": 2,
+      "503": 0
+    },
+    "total_requests": 6,
+    "successful_requests": 4,
+    "failed_requests": 2,
+    "success_ratio": 0.6666666666666666,
+    "target_met": false,
+    "allowed_failed_requests": 0.06000000000000005,
+    "error_budget_consumed_ratio": 33.33333333333331,
+    "error_budget_remaining_ratio": 0.0,
+    "error_budget_overrun_ratio": 32.33333333333331,
+    "duration_seconds": 0.07616,
+    "actual_rps": 78.78151260504201,
+    "p95_seconds": 0.008499999999999997,
+    "p95_method": "prometheus_histogram_estimate",
+    "has_data": true
+  },
+  "events": [
+    {
+      "action": "fault_started",
+      "event_id": "c72d061472f645a2ab27b911a96a4416",
+      "timestamp": "2026-11-14T04:27:31.778298+00:00"
+    },
+    {
+      "action": "fault_cleared",
+      "event_id": "7c4425d844664c81bbfa76c431c78e6e",
+      "timestamp": "2026-11-14T04:27:31.783634+00:00"
+    },
+    {
+      "action": "healing_simulation_enabled",
+      "event_id": "0f8e62d46258442bbe40bafd11e1c7a2",
+      "timestamp": "2026-11-14T04:27:31.787362+00:00"
+    },
+    {
+      "action": "healing_probe",
+      "event_id": "ecb9fdd3e3004c768e52e952261d5307",
+      "timestamp": "2026-11-14T04:27:31.789341+00:00"
+    },
+    {
+      "action": "healing_incident_detected",
+      "event_id": "f69427301d3548948c539724481401e1",
+      "timestamp": "2026-11-14T04:27:31.789403+00:00"
+    },
+    {
+      "action": "healing_probe",
+      "event_id": "752b3c229cfc497390a04fdf7dfa40b5",
+      "timestamp": "2026-11-14T04:27:31.791311+00:00"
+    },
+    {
+      "action": "healing_probe",
+      "event_id": "0fc4d83e611a4758859747dc897a7936",
+      "timestamp": "2026-11-14T04:27:31.793381+00:00"
+    },
+    {
+      "action": "healing_action_simulated",
+      "event_id": "b0f942f146814f028dbc8b714d52786d",
+      "timestamp": "2026-11-14T04:27:31.793460+00:00"
+    },
+    {
+      "action": "healing_probe",
+      "event_id": "0b5ecc28a77a472fbbf050614cb1ddcf",
+      "timestamp": "2026-11-14T04:27:31.796299+00:00"
+    },
+    {
+      "action": "healing_probe",
+      "event_id": "f7485770148c4369b4780a5aa299ff43",
+      "timestamp": "2026-11-14T04:27:31.798355+00:00"
+    },
+    {
+      "action": "healing_recovery_verified",
+      "event_id": "430d6c635748403d91552f9530ebec27",
+      "timestamp": "2026-11-14T04:27:31.798441+00:00"
+    },
+    {
+      "action": "deployment_started",
+      "event_id": "c46dd3a45cff4856b4651e67a51d5f49",
+      "timestamp": "2026-11-14T04:27:31.801322+00:00"
+    },
+    {
+      "action": "deployment_candidate_checked",
+      "event_id": "29404cd377844d5a94be7f9f08841c6a",
+      "timestamp": "2026-11-14T04:27:31.803433+00:00"
+    },
+    {
+      "action": "deployment_switched",
+      "event_id": "f07ef133bed74982adcf656c61e207ee",
+      "timestamp": "2026-11-14T04:27:31.803558+00:00"
+    },
+    {
+      "action": "deployment_observed",
+      "event_id": "8e8f3639da774168b5b988e4605fcc3c",
+      "timestamp": "2026-11-14T04:27:31.805608+00:00"
+    },
+    {
+      "action": "deployment_completed",
+      "event_id": "83b975e5d19b4733b347d60beb95b1fe",
+      "timestamp": "2026-11-14T04:27:31.805682+00:00"
+    },
+    {
+      "action": "deployment_started",
+      "event_id": "4c93cd2c129b4751a74219c85f158c8e",
+      "timestamp": "2026-11-14T04:27:31.808190+00:00"
+    },
+    {
+      "action": "deployment_candidate_checked",
+      "event_id": "711dc3c84ea84a91b4a97d2fbcfdd5e3",
+      "timestamp": "2026-11-14T04:27:31.809943+00:00"
+    },
+    {
+      "action": "deployment_switched",
+      "event_id": "5ae98a4d3939465c9a0b3849d816a12f",
+      "timestamp": "2026-11-14T04:27:31.810020+00:00"
+    },
+    {
+      "action": "deployment_observed",
+      "event_id": "e50fdf9af134465c8113ef5c2ab450a6",
+      "timestamp": "2026-11-14T04:27:31.812062+00:00"
+    },
+    {
+      "action": "deployment_completed",
+      "event_id": "07b6a45358684e15b4e66cd8e427905c",
+      "timestamp": "2026-11-14T04:27:31.812121+00:00"
+    },
+    {
+      "action": "deployment_rolled_back",
+      "event_id": "7c4a983ef58c4593808589d95ef5d068",
+      "timestamp": "2026-11-14T04:27:31.814141+00:00"
+    },
+    {
+      "action": "deployment_previous_replaced",
+      "event_id": "cd6b715cb18045ac8dba274907c9bd3d",
+      "timestamp": "2026-11-14T04:27:31.816567+00:00"
+    },
+    {
+      "action": "deployment_started",
+      "event_id": "6db837a9f1d5487cbcf58c75ebce51a4",
+      "timestamp": "2026-11-14T04:27:31.816659+00:00"
+    },
+    {
+      "action": "deployment_candidate_checked",
+      "event_id": "a1d27244ccd746939612422152853df4",
+      "timestamp": "2026-11-14T04:27:31.818724+00:00"
+    },
+    {
+      "action": "deployment_switched",
+      "event_id": "2551530996fe41cba8c968c46cdc1020",
+      "timestamp": "2026-11-14T04:27:31.818819+00:00"
+    },
+    {
+      "action": "deployment_observed",
+      "event_id": "ed95d53f867d4a37816af7bd71e0ad8d",
+      "timestamp": "2026-11-14T04:27:31.821215+00:00"
+    },
+    {
+      "action": "deployment_rolled_back",
+      "event_id": "7e2ecad816a0495aa0217a647d3b4f6f",
+      "timestamp": "2026-11-14T04:27:31.821284+00:00"
+    }
+  ],
+  "limitations": [
+    "Counts measure completed API requests, not client network failures.",
+    "A process restart resets lifetime counters; do not compare different processes.",
+    "Events are bounded in-memory observations, not a persistent audit database.",
+    "Scope is caller-declared; simulation is not proof of real recovery or deployment."
+  ]
+}

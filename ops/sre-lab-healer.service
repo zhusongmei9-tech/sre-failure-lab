@@ -1,0 +1,14 @@
+[Unit]
+Description=SRE Lab bounded self-healing controller
+After=sre-lab.service
+BindsTo=sre-lab.service
+PartOf=sre-lab.service
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/sre-failure-lab
+ExecStart=/usr/bin/python3 -m ops.heal run
+Restart=on-failure
+RestartSec=5
+UMask=0077
+NoNewPrivileges=true

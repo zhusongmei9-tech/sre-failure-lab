@@ -1,0 +1,9 @@
+{"event": "load_started", "target": "http://172.16.58.137:18000", "target_rps": 10.0, "workers": 4, "duration_seconds": 60.0}
+{"event": "load_window", "elapsed_seconds": 10.01, "completed": 99, "actual_rps": 9.89, "status_counts": {"200": 99}, "success_ratio": 1.0, "p95_ms": 9.09}
+{"event": "load_window", "elapsed_seconds": 20.01, "completed": 100, "actual_rps": 10.0, "status_counts": {"200": 100}, "success_ratio": 1.0, "p95_ms": 8.94}
+{"event": "load_window", "elapsed_seconds": 30.01, "completed": 99, "actual_rps": 9.9, "status_counts": {"200": 99}, "success_ratio": 1.0, "p95_ms": 8.36}
+{"event": "load_window", "elapsed_seconds": 40.02, "completed": 99, "actual_rps": 9.9, "status_counts": {"200": 99}, "success_ratio": 1.0, "p95_ms": 8.74}
+{"event": "load_window", "elapsed_seconds": 50.02, "completed": 99, "actual_rps": 9.89, "status_counts": {"200": 99}, "success_ratio": 1.0, "p95_ms": 8.89}
+{"event": "load_window", "elapsed_seconds": 60.0, "completed": 99, "actual_rps": 9.92, "status_counts": {"200": 99}, "success_ratio": 1.0, "p95_ms": 8.79}
+{"event": "load_window", "elapsed_seconds": 60.0, "completed": 0, "actual_rps": 0.0, "status_counts": {}, "success_ratio": null, "p95_ms": null}
+{"event": "load_finished", "status_counts": {"200": 595}}

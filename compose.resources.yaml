@@ -1,0 +1,66 @@
+# OPTIONAL Linux Docker Engine override. Read docs/resources.md first.
+# Requires an explicit, host-owned Docker bridge gateway IP. No public bind default.
+services:
+  prometheus:
+    extra_hosts:
+      - "metrics-host:${METRICS_HOST_GATEWAY:?Set the Docker bridge gateway IP after reviewing docs/resources.md}"
+    volumes:
+      - ./monitoring/prometheus/prometheus.resources.yml:/etc/prometheus/prometheus.yml:ro
+
+  node-exporter:
+    image: quay.io/prometheus/node-exporter:v1.12.1
+    network_mode: host
+    pid: host
+    user: "65534:65534"
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    command:
+      - --path.rootfs=/host
+      - --web.listen-address=${METRICS_HOST_GATEWAY:?Set the Docker bridge gateway IP}:9100
+      - --collector.disable-defaults
+      - --collector.cpu
+      - --collector.meminfo
+      - --collector.loadavg
+      - --collector.diskstats
+      - --collector.filesystem
+      - --collector.netdev
+      - --collector.stat
+      - --collector.uname
+      - --collector.filesystem.mount-points-exclude=^/(dev|proc|sys|var/lib/docker/.+|var/lib/kubelet/.+)($$|/)
+    volumes:
+      - type: bind
+        source: /
+        target: /host
+        read_only: true
+        bind:
+          propagation: rslave
+    cpus: "0.25"
+    mem_limit: 128m
+    pids_limit: 64
+
+  cadvisor:
+    # Restricted raw-cgroup collector: no privileged mode, Docker socket, host root,
+    # devices, or Docker data directory. Some metrics may be unavailable; do not
+    # silently add privileges to make them appear.
+    image: ghcr.io/google/cadvisor:0.55.1
+    cgroup: host
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    command:
+      - --docker_only=false
+      - --store_container_labels=false
+      - --enable_metrics=cpu,memory
+      - --housekeeping_interval=5s
+      - --max_housekeeping_interval=5s
+    volumes:
+      - type: bind
+        source: /sys
+        target: /sys
+        read_only: true
+    tmpfs:
+      - /tmp:size=16m
+    cpus: "0.5"
+    mem_limit: 256m
+    pids_limit: 128

@@ -1,0 +1,65 @@
+rule_files:
+  - slo.yml
+evaluation_interval: 1m
+tests:
+  - name: no traffic is no data and no alert
+    interval: 1m
+    input_series:
+      - series: lab_http_requests_total{job="api",status_code="200"}
+        values: 0+0x80
+      - series: lab_http_requests_total{job="api",status_code="429"}
+        values: 0+0x80
+    promql_expr_test:
+      - expr: lab:slo_success_ratio:5m
+        eval_time: 70m
+        exp_samples: []
+    alert_rule_test:
+      - eval_time: 70m
+        alertname: LabSLOFastBurn
+        exp_alerts: []
+  - name: healthy requests
+    interval: 1m
+    input_series:
+      - series: lab_http_requests_total{job="api",status_code="200"}
+        values: 0+100x80
+      - series: lab_http_requests_total{job="api",status_code="429"}
+        values: 0+0x80
+    promql_expr_test:
+      - expr: lab:slo_success_ratio:5m
+        eval_time: 70m
+        exp_samples:
+          - labels: '{__name__="lab:slo_success_ratio:5m"}'
+            value: 1
+    alert_rule_test:
+      - eval_time: 70m
+        alertname: LabSLOFastBurn
+        exp_alerts: []
+  - name: deliberate 429 overload consumes budget
+    interval: 1m
+    input_series:
+      - series: lab_http_requests_total{job="api",status_code="200"}
+        values: 0+80x80
+      - series: lab_http_requests_total{job="api",status_code="429"}
+        values: 0+20x80
+    alert_rule_test:
+      - eval_time: 70m
+        alertname: LabSLOFastBurn
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              slo: availability
+            exp_annotations:
+              summary: Product request SLO budget is burning quickly
+              description: 99 percent request-based target; 429 and all non-2xx count as failures. Both 5m and 1h burn rates exceed 14.4 with minimum traffic.
+              runbook: docs/slo-reports.md
+  - name: low traffic does not page
+    interval: 1m
+    input_series:
+      - series: lab_http_requests_total{job="api",status_code="200"}
+        values: 0+0x80
+      - series: lab_http_requests_total{job="api",status_code="503"}
+        values: 0+1x80
+    alert_rule_test:
+      - eval_time: 70m
+        alertname: LabSLOFastBurn
+        exp_alerts: []

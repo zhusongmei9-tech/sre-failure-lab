@@ -1,0 +1,17 @@
+{
+  "image": "ghcr.io/google/cadvisor:0.55.1",
+  "platform": "linux/arm64",
+  "manifest_digest": "sha256:9abdb03eb9419d1aba0b535f1e8716a0570448648c98a285d1f6fe217d0e1211",
+  "config_digest": "sha256:4fa220428d11723aff19d2970128f60b548e6454a87cb17e6eb8798f8cdac741",
+  "verified_layers": 5,
+  "archive": "cadvisor-0.55.1-arm64.tar",
+  "archive_bytes": 64102400,
+  "loaded_image_id": "sha256:04cca6356f5452acde6529ca1fdb551131ed733c46b71a852cb753a0ac9b51a7",
+  "loaded_rootfs_matches": true,
+  "loaded_config_matches": true,
+  "docker_save_comparison": {
+    "semantic_config_equal": true,
+    "changed_keys": []
+  },
+  "transport": "Official GHCR HTTPS manifests/config; NJU GHCR cache for some layer blobs, verified against official SHA256 and diff_ids"
+}

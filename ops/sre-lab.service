@@ -1,0 +1,19 @@
+[Unit]
+Description=SRE Lab complete application and monitoring stack
+Requires=docker.service
+Wants=network-online.target sre-lab-healer.service
+After=docker.service network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=/opt/sre-failure-lab
+ExecStart=/usr/bin/python3 -m ops.stack start
+# ExecStopPost also runs when startup fails partway through.
+ExecStopPost=/usr/bin/python3 -m ops.stack stop
+TimeoutStartSec=240
+TimeoutStopSec=120
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target

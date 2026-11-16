@@ -1,0 +1,79 @@
+{
+  "active": "green",
+  "previous": "blue",
+  "slots": {
+    "blue": {
+      "image": "sre-lab-api:0.3.0",
+      "version": "0.3.0",
+      "image_id": "sha256:b613cd284b40e4555e3f37c79bc78a85c31c7dce536d8963ce16f45de992d4fb"
+    },
+    "green": {
+      "image": "sre-lab-api:0.3.1",
+      "version": "0.3.1",
+      "image_id": "sha256:170dfa0d6dcfb676fcf0ccadc577ca0a4d6b9cc3ec995027f1d66da855b3101d"
+    }
+  },
+  "phase": "idle",
+  "release_id": "8247412fa202426d91f6eca96bc31623",
+  "persistent": true,
+  "simulation": false,
+  "last_outcome": "manually_rolled_back"
+}
+{
+  "schema_version": 1,
+  "api_identity": "green:sha256:170dfa0d6dcfb676fcf0ccadc577ca0a4d6b9cc3ec995027f1d66da855b3101d",
+  "services": {
+    "redis": {
+      "phase": "healthy",
+      "healthy": true,
+      "consecutive_failures": 0,
+      "consecutive_successes": 2,
+      "attempts": 0,
+      "locked_out": false,
+      "last_action_at": 1794635757.0700624,
+      "incident_started_at": 1794635746.930441,
+      "incident_id": "f22aff1a987c43578fd0350b73363ed8",
+      "recovery_observed": true,
+      "last_probe": {
+        "at": 1794635919.3676372,
+        "healthy": true,
+        "reason": "redis_ping_ok"
+      }
+    },
+    "api": {
+      "phase": "healthy",
+      "healthy": true,
+      "consecutive_failures": 0,
+      "consecutive_successes": 2,
+      "attempts": 0,
+      "locked_out": false,
+      "last_action_at": 1794635782.5583153,
+      "incident_started_at": 1794635772.456604,
+      "incident_id": "d5a9d1e4c5754ee1bca49b56f660d472",
+      "recovery_observed": true,
+      "last_probe": {
+        "at": 1794635919.368172,
+        "healthy": true,
+        "reason": "api_business_ok"
+      }
+    }
+  },
+  "api_actions_suspended": false,
+  "deployment_phase": "idle",
+  "updated_at": "2026-11-14T05:58:39.368175+00:00",
+  "configuration": {
+    "failure_threshold": 3,
+    "cooldown_seconds": 30,
+    "max_attempts": 2,
+    "success_threshold": 2
+  }
+}
+active
+sre-lab-api-blue-1 Up About a minute (healthy)
+sre-lab-cadvisor-1 Up 23 minutes (healthy)
+sre-lab-grafana-1 Up 23 minutes
+sre-lab-api-green-1 Up 2 minutes (healthy)
+sre-lab-prometheus-1 Up 32 minutes
+sre-lab-node-exporter-1 Up 32 minutes
+sre-lab-edge-1 Up 33 minutes
+sre-lab-redis-1 Up 2 minutes (healthy)

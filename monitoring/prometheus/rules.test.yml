@@ -1,0 +1,100 @@
+rule_files:
+- alerts.yml
+evaluation_interval: 15s
+tests:
+- name: error-rate-fires-and-recovers
+  interval: 15s
+  input_series:
+  - series: lab_http_requests_total{job="api",status_code="500"}
+    values: 0+20x12 240+0x12
+  - series: lab_http_requests_total{job="api",status_code="200"}
+    values: 0+80x12 1060+100x12
+  alert_rule_test:
+  - eval_time: 15s
+    alertname: LabHighErrorRate
+    exp_alerts: []
+  - eval_time: 1m
+    alertname: LabHighErrorRate
+    exp_alerts:
+    - exp_labels:
+        severity: warning
+      exp_annotations:
+        summary: Product 5xx error rate exceeds 10 percent
+        runbook: docs/runbooks.md
+  - eval_time: 5m
+    alertname: LabHighErrorRate
+    exp_alerts: []
+- name: low-traffic-gate
+  interval: 15s
+  input_series:
+  - series: lab_http_requests_total{job="api",status_code="500"}
+    values: 0+1x12
+  alert_rule_test:
+  - eval_time: 2m
+    alertname: LabHighErrorRate
+    exp_alerts: []
+- name: no-traffic
+  interval: 15s
+  input_series:
+  - series: lab_http_requests_total{job="api",status_code="500"}
+    values: 0+0x12
+  alert_rule_test:
+  - eval_time: 2m
+    alertname: LabHighErrorRate
+    exp_alerts: []
+- name: api-down-and-recovery
+  interval: 15s
+  input_series:
+  - series: up{job="api",instance="api:8000"}
+    values: 0+0x8 1+0x8
+  alert_rule_test:
+  - eval_time: 0s
+    alertname: LabAPIDown
+    exp_alerts: []
+  - eval_time: 1m
+    alertname: LabAPIDown
+    exp_alerts:
+    - exp_labels:
+        severity: critical
+        job: api
+        instance: api:8000
+      exp_annotations:
+        summary: API metrics cannot be scraped
+        runbook: docs/runbooks.md
+  - eval_time: 3m
+    alertname: LabAPIDown
+    exp_alerts: []
+- name: cache-failures
+  interval: 15s
+  input_series:
+  - series: lab_cache_requests_total{job="api",result="error"}
+    values: 0+10x12
+  alert_rule_test:
+  - eval_time: 1m
+    alertname: LabCacheFailures
+    exp_alerts:
+    - exp_labels:
+        severity: warning
+      exp_annotations:
+        summary: Cache failures affect product requests
+        runbook: docs/runbooks.md
+- name: latency
+  interval: 15s
+  input_series:
+  - series: lab_http_requests_total{job="api",status_code="200"}
+    values: 0+100x12
+  - series: lab_http_request_duration_seconds_bucket{job="api",le="0.5"}
+    values: 0+0x12
+  - series: lab_http_request_duration_seconds_bucket{job="api",le="1"}
+    values: 0+100x12
+  - series: lab_http_request_duration_seconds_bucket{job="api",le="+Inf"}
+    values: 0+100x12
+  alert_rule_test:
+  - eval_time: 1m
+    alertname: LabHighLatency
+    exp_alerts:
+    - exp_labels:
+        severity: warning
+      exp_annotations:
+        summary: Product P95 exceeds 500 milliseconds
+        runbook: docs/runbooks.md

@@ -1,0 +1,146 @@
+{
+  "schema_version": 1,
+  "mode": "real",
+  "started_at": "2026-11-14T05:26:07.939909+00:00",
+  "initial_version": "0.3.0",
+  "checks": [
+    {
+      "name": "normal_deployment",
+      "passed": true,
+      "timestamp": "2026-11-14T05:26:14.131481+00:00",
+      "version": "0.3.1",
+      "slot": "green",
+      "release_id": "dc5473e225214eb2b5b14e331f82cfd8",
+      "elapsed_seconds": 6.192
+    },
+    {
+      "name": "manual_rollback",
+      "passed": true,
+      "timestamp": "2026-11-14T05:26:14.545805+00:00",
+      "version": "0.3.0",
+      "slot": "blue",
+      "release_id": "02377ecb3d1444ae91aaa902d757f7b1"
+    },
+    {
+      "name": "post_switch_automatic_rollback",
+      "passed": true,
+      "timestamp": "2026-11-14T05:26:26.527999+00:00",
+      "injected": {
+        "injected": true,
+        "slot": "green",
+        "release_id": "9e8c3f04e1324bd68d2061f74776b624",
+        "timestamp": "2026-11-14T05:26:15.954257+00:00"
+      },
+      "active_version": "0.3.0",
+      "active_slot": "blue"
+    },
+    {
+      "name": "final_deployment",
+      "passed": true,
+      "timestamp": "2026-11-14T05:26:33.187209+00:00",
+      "version": "0.3.1",
+      "slot": "green",
+      "previous_slot": "blue",
+      "release_id": "05520dfab35b4451970c7df4f93390cc"
+    },
+    {
+      "name": "redis_outage_fallback",
+      "passed": true,
+      "timestamp": "2026-11-14T05:26:33.471342+00:00",
+      "status_code": 200,
+      "cache": "BYPASS"
+    },
+    {
+      "name": "redis_self_healing",
+      "passed": true,
+      "timestamp": "2026-11-14T05:26:54.528664+00:00",
+      "elapsed_seconds": 21.057,
+      "actions": [
+        {
+          "timestamp": "2026-11-14T05:26:44.239688+00:00",
+          "action": "healing_action_accepted",
+          "simulation": false,
+          "details": {
+            "service": "redis",
+            "target": "redis",
+            "incident_id": "727642b76c914eefa1f20492c525f1a9",
+            "recovered": false,
+            "mode": "real"
+          }
+        }
+      ],
+      "recovery": {
+        "timestamp": "2026-11-14T05:26:54.380427+00:00",
+        "action": "healing_recovery_verified",
+        "simulation": false,
+        "details": {
+          "service": "redis",
+          "incident_id": "727642b76c914eefa1f20492c525f1a9",
+          "attempts": 1,
+          "reason": "redis_ping_ok",
+          "mode": "real",
+          "locked_out": false,
+          "elapsed_seconds": 20.403453826904297
+        }
+      }
+    },
+    {
+      "name": "api_self_healing",
+      "passed": true,
+      "timestamp": "2026-11-14T05:27:20.164304+00:00",
+      "version": "0.3.1",
+      "elapsed_seconds": 25.066,
+      "actions": [
+        {
+          "timestamp": "2026-11-14T05:27:09.654886+00:00",
+          "action": "healing_action_accepted",
+          "simulation": false,
+          "details": {
+            "service": "api",
+            "target": "api-green",
+            "incident_id": "b5a4a96990aa46428e0ff6aec16d7f63",
+            "recovered": false,
+            "mode": "real"
+          }
+        }
+      ],
+      "recovery": {
+        "timestamp": "2026-11-14T05:27:19.755440+00:00",
+        "action": "healing_recovery_verified",
+        "simulation": false,
+        "details": {
+          "service": "api",
+          "incident_id": "b5a4a96990aa46428e0ff6aec16d7f63",
+          "attempts": 1,
+          "reason": "api_business_ok",
+          "mode": "real",
+          "locked_out": false,
+          "elapsed_seconds": 20.323689222335815
+        }
+      }
+    }
+  ],
+  "status": "passed",
+  "final_state": {
+    "active": "green",
+    "previous": "blue",
+    "slots": {
+      "blue": {
+        "image": "sre-lab-api:0.3.0",
+        "version": "0.3.0",
+        "image_id": "sha256:b613cd284b40e4555e3f37c79bc78a85c31c7dce536d8963ce16f45de992d4fb"
+      },
+      "green": {
+        "image": "sre-lab-api:0.3.1",
+        "version": "0.3.1",
+        "image_id": "sha256:170dfa0d6dcfb676fcf0ccadc577ca0a4d6b9cc3ec995027f1d66da855b3101d"
+      }
+    },
+    "phase": "idle",
+    "release_id": "05520dfab35b4451970c7df4f93390cc",
+    "persistent": true,
+    "simulation": false,
+    "last_outcome": "completed"
+  },
+  "ended_at": "2026-11-14T05:27:20.166345+00:00"
+}

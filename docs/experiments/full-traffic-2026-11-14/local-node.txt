@@ -1,0 +1,12 @@
+✔ auth failure clears stale content; success stays read-only and clears token input (41.164959ms)
+✔ late response after disconnect cannot repopulate snapshot (0.9245ms)
+✔ newer login wins over older response (0.716375ms)
+✔ dynamic values use text nodes, no credential persistence APIs (0.149833ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 87.795125

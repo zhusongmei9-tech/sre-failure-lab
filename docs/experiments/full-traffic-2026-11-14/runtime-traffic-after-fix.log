@@ -1,0 +1,11 @@
+PHASE: baseline
+PHASE: latency
+PHASE: cpu
+PHASE: redis_outage
+PHASE: api_outage
+PHASE: normal_deployment
+PHASE: manual_rollback
+PHASE: automatic_rollback
+PHASE: restore_rollback_copy
+PHASE: final_recovery
+{"status": "passed", "requests": 3495, "directory": "/opt/sre-failure-lab/runtime/traffic-2026-11-14T055439.942084_0000", "validation_failures": []}

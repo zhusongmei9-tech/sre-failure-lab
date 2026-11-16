@@ -1,0 +1,50 @@
+SRE Failure Lab — full local validation
+Validation date: 2026-11-14 (Asia/Shanghai)
+Finished at: 2026-11-14T13:41:16.632903+08:00
+Scope: local workspace only; no SSH, Docker runtime, or remote deployment operations performed.
+Python: 3.12.14
+Node.js: v24.14.1
+Real Redis server: 7.4.2 (/tmp/sre-lab-redis.Rq7JmX/redis-7.4.2/src/redis-server)
+
+SUMMARY
+Locked dependency sync: PASS (exit 0)
+pytest: 172 passed, 0 failed, 0 skipped; 5.41 seconds. Real Redis integration included.
+Ruff: PASS (exit 0)
+Console DOM tests: 4 passed, 0 failed, 0 skipped, 0 cancelled.
+compileall: PASS (exit 0; quiet command produced no output)
+No source fixes were required.
+
+COMMANDS AND OUTPUT
+Command: uv sync --locked --python 3.12
+Exit: 0
+Resolved 30 packages; checked 27 installed packages.
+
+Command: TEST_REDIS_SERVER=/tmp/sre-lab-redis.Rq7JmX/redis-7.4.2/src/redis-server uv run --locked pytest -q -ra
+Exit: 0
+........................................................................ [ 41%]
+........................................................................ [ 83%]
+............................                                             [100%]
+172 passed in 5.41s
+
+Command: uv run --locked ruff check .
+Exit: 0
+All checks passed!
+
+Command: node --test tests/console.test.cjs
+Exit: 0
+✔ auth failure clears stale content; success stays read-only and clears token input (41.164959ms)
+✔ late response after disconnect cannot repopulate snapshot (0.9245ms)
+✔ newer login wins over older response (0.716375ms)
+✔ dynamic values use text nodes, no credential persistence APIs (0.149833ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 87.795125
+
+Command: uv run --locked python -m compileall -q app scripts tests loadgen ops
+Exit: 0
+(no output)

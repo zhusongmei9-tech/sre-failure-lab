@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>SRE Lab · 只读控制台</title><link rel="stylesheet" href="/console/assets/console.css"><script defer src="/console/assets/console.js"></script></head>
+<body>
+<header><div><span class="eyebrow">SRE FAILURE LAB / OBSERVATION DECK</span><h1>故障不是终点，<br>恢复需要证据。</h1><p>把业务表现、演练状态与操作记录放在同一视野。</p></div><span class="pill">只读 · 不执行恢复或发布</span></header>
+<main>
+<section class="notice"><strong>模拟边界</strong><span>自愈和蓝绿发布只演练状态机，不操作容器，不切换真实流量。业务指标来自当前 API 进程，不代表生产 SLO。</span></section>
+<section class="access"><form id="access"><label for="token">实验访问令牌</label><div class="inputs"><input id="token" type="password" autocomplete="off" placeholder="输入 LAB_TOKEN，仅在当前页面内存使用" required><button type="submit">连接观察台</button></div></form><button id="disconnect" class="secondary" disabled>断开并清除</button></section>
+<div class="toolbar"><span id="connection" role="status" aria-live="polite">尚未连接</span><div><button id="refresh" class="secondary" disabled>刷新</button><button id="download" class="secondary" disabled>下载复盘 Markdown</button></div></div>
+<section class="metrics" aria-label="业务概览">
+<article><span>完成请求</span><strong id="requests">—</strong><small>当前进程启动以来</small></article>
+<article><span>成功率 / SLO 99%</span><strong id="success">—</strong><small>2xx ÷ 全部完成请求，包含 429</small></article>
+<article><span>错误预算消耗</span><strong id="budget">—</strong><small>超过 100% 表示预算耗尽</small></article>
+<article><span>P95 延迟</span><strong id="latency">—</strong><small>直方图估算，非精确分位数</small></article>
+</section>
+<section class="grid"><article class="panel"><div class="panel-head"><h2>业务与故障</h2><span class="tag">LIVE API</span></div><dl id="business"><dt>状态</dt><dd>等待连接</dd></dl><div class="hint">健康探测与商品成功率不是同一个指标。</div></article>
+<article class="panel"><div class="panel-head"><h2>受控自愈</h2><span class="tag simulation">SIMULATION</span></div><pre id="healing">等待连接</pre><div class="hint">连续失败 → 有限动作 → 再次探测验证。动作接受不等于已恢复。</div></article>
+<article class="panel"><div class="panel-head"><h2>蓝绿发布</h2><span class="tag simulation">SIMULATION</span></div><pre id="deployment">等待连接</pre><div class="hint">候选检查 → 模拟切流 → 观察 → 保留或回滚。</div></article>
+<article class="panel"><div class="panel-head"><h2>口径与保留</h2><span class="tag">SCOPE</span></div><p>没有数据时显示“无数据”，不伪装成健康。</p><p>事件最多保留 200 条，API 重启会清空。导出的报告只包含当前进程观测，事件时间为记录时间。</p><p>令牌不写入 URL、Cookie 或浏览器存储。关闭或断开页面后需重新输入。</p></article></section>
+<section class="panel events"><div class="panel-head"><h2>操作时间线</h2><span id="event-count" class="tag">0 EVENTS</span></div><div id="events" class="event-list"><p class="empty">尚未连接。这里只展示记录，不提供危险操作按钮。</p></div></section>
+<footer>故障 → 指标 → 告警 → 排查 → 恢复 → 证据 <span id="updated">手动刷新，不后台轮询</span></footer>
+</main></body></html>

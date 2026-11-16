@@ -1,0 +1,35 @@
+groups:
+  - name: lab
+    rules:
+      - alert: LabHighErrorRate
+        expr: (sum(rate(lab_http_requests_total{job="api",status_code=~"5.."}[1m])) / sum(rate(lab_http_requests_total{job="api"}[1m])) > 0.1) and (sum(increase(lab_http_requests_total{job="api"}[1m])) >= 20)
+        for: 30s
+        labels:
+          severity: warning
+        annotations:
+          summary: Product 5xx error rate exceeds 10 percent
+          runbook: docs/runbooks.md
+      - alert: LabHighLatency
+        expr: (histogram_quantile(0.95, sum by (le) (rate(lab_http_request_duration_seconds_bucket{job="api"}[1m]))) > 0.5) and (sum(increase(lab_http_requests_total{job="api"}[1m])) >= 20)
+        for: 30s
+        labels:
+          severity: warning
+        annotations:
+          summary: Product P95 exceeds 500 milliseconds
+          runbook: docs/runbooks.md
+      - alert: LabCacheFailures
+        expr: sum(increase(lab_cache_requests_total{job="api",result="error"}[1m])) > 5
+        for: 15s
+        labels:
+          severity: warning
+        annotations:
+          summary: Cache failures affect product requests
+          runbook: docs/runbooks.md
+      - alert: LabAPIDown
+        expr: up{job="api"} == 0
+        for: 15s
+        labels:
+          severity: critical
+        annotations:
+          summary: API metrics cannot be scraped
+          runbook: docs/runbooks.md

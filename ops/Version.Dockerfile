@@ -1,0 +1,5 @@
+ARG BASE_IMAGE=sre-lab-api:0.3.0
+FROM ${BASE_IMAGE}
+ARG APP_VERSION=0.3.1
+ENV APP_VERSION=${APP_VERSION}
+LABEL org.opencontainers.image.version=${APP_VERSION}

@@ -1,0 +1,84 @@
+{
+  "checked_at": "2026-11-14T05:42:11.942096+00:00",
+  "checks": [
+    {
+      "path": "/health/live",
+      "status": 200,
+      "passed": true
+    },
+    {
+      "path": "/health/ready",
+      "status": 200,
+      "passed": true
+    },
+    {
+      "path": "/products/3",
+      "status": 200,
+      "passed": true
+    },
+    {
+      "path": "/products/3",
+      "status": 200,
+      "passed": true
+    },
+    {
+      "name": "cache_miss_then_hit",
+      "passed": true
+    },
+    {
+      "path": "/products/999",
+      "status": 404,
+      "passed": true
+    },
+    {
+      "path": "/products/0",
+      "status": 422,
+      "passed": true
+    },
+    {
+      "path": "/products/not-a-number",
+      "status": 422,
+      "passed": true
+    },
+    {
+      "path": "/lab/status",
+      "status": 401,
+      "passed": true
+    },
+    {
+      "path": "/lab/status",
+      "status": 200,
+      "passed": true
+    },
+    {
+      "path": "/console",
+      "status": 200,
+      "passed": true
+    },
+    {
+      "path": "/docs",
+      "status": 200,
+      "passed": true
+    },
+    {
+      "path": "/metrics",
+      "status": 200,
+      "passed": true
+    },
+    {
+      "name": "json_log_request_id_correlation",
+      "passed": true,
+      "request_id": "93a40249c1c54517b84a239733f9a372"
+    },
+    {
+      "path": "/version",
+      "status": 200,
+      "passed": true
+    }
+  ],
+  "status": "passed",
+  "version": {
+    "version": "0.3.1",
+    "deployment_simulation_is_separate": true
+  }
+}
