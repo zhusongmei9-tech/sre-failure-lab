@@ -1,0 +1,193 @@
+name: Publish source release
+
+on:
+  push:
+    branches: [main]
+    paths: [.github/workflows/source-release.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: source-release-v0.3.0
+  cancel-in-progress: false
+
+jobs:
+  release:
+    if: github.repository == 'zhusongmei9-tech/sre-failure-lab' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      actions: read
+    env:
+      SOURCE_SHA: 475db11aab8e77806a8c7450e1eb36285634b0ed
+      RELEASE_TAG: v0.3.0
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 475db11aab8e77806a8c7450e1eb36285634b0ed
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Build archives from the verified source commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+          python3 - <<'PY'
+          import os, tomllib
+          from pathlib import Path
+          version = tomllib.loads(Path('pyproject.toml').read_text())['project']['version']
+          assert 'v' + version == os.environ['RELEASE_TAG'], 'Source version mismatch'
+          PY
+          mkdir -p dist/source-release
+          prefix="sre-failure-lab-${RELEASE_TAG}"
+          git archive --format=zip --prefix="${prefix}/" "$SOURCE_SHA" > "dist/source-release/${prefix}-source.zip"
+          git archive --format=tar --prefix="${prefix}/" "$SOURCE_SHA" | gzip -n > "dist/source-release/${prefix}-source.tar.gz"
+          cd dist/source-release
+          unzip -t "${prefix}-source.zip"
+          tar -tzf "${prefix}-source.tar.gz" > /dev/null
+          sha256sum "${prefix}-source.zip" "${prefix}-source.tar.gz" > SHA256SUMS
+          sha256sum --check SHA256SUMS
+      - name: Upload, verify and publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import hashlib
+          import json
+          import os
+          import subprocess
+          import tempfile
+          from pathlib import Path
+
+          repo = os.environ['GH_REPO']
+          source = os.environ['SOURCE_SHA']
+          tag = os.environ['RELEASE_TAG']
+          base = f'repos/{repo}'
+          marker = f'<!-- source-release: {source} -->'
+          folder = Path('dist/source-release')
+          names = [f'sre-failure-lab-{tag}-source.zip',
+                   f'sre-failure-lab-{tag}-source.tar.gz', 'SHA256SUMS']
+          expected = {name: hashlib.sha256((folder / name).read_bytes()).hexdigest()
+                      for name in names}
+
+          def gh(*args):
+              return subprocess.run(['gh', *args], check=True, capture_output=True).stdout
+
+          def api(path, *args, missing_ok=False):
+              result = subprocess.run(['gh', 'api', path, *args], capture_output=True)
+              if result.returncode:
+                  if missing_ok and '(HTTP 404)' in result.stderr.decode():
+                      return None
+                  raise RuntimeError(result.stderr.decode())
+              return json.loads(result.stdout)
+
+          def verify_tag(required=True):
+              ref = api(f'{base}/git/ref/tags/{tag}', missing_ok=not required)
+              if ref is None:
+                  return False
+              obj = ref['object']
+              for _ in range(10):
+                  if obj['type'] != 'tag':
+                      break
+                  obj = api(f'{base}/git/tags/{obj["sha"]}')['object']
+              if obj['type'] != 'commit' or obj['sha'] != source:
+                  raise RuntimeError('Existing tag points to a different source commit')
+              return True
+
+          def find_release():
+              matches = []
+              page = 1
+              while True:
+                  batch = api(f'{base}/releases?per_page=100&page={page}')
+                  matches.extend(item for item in batch if item['tag_name'] == tag)
+                  if len(batch) < 100:
+                      break
+                  page += 1
+              if len(matches) > 1:
+                  raise RuntimeError('Multiple releases use this tag')
+              return api(f'{base}/releases/{matches[0]["id"]}') if matches else None
+
+          runs = api(f'{base}/actions/runs?head_sha={source}&per_page=100')['workflow_runs']
+          checks = [run for run in runs if run['name'] == 'Python checks' and run['event'] == 'push']
+          if not checks or max(checks, key=lambda run: run['id'])['conclusion'] != 'success':
+              raise RuntimeError('The source commit must have a successful Python checks run')
+
+          release = find_release()
+          if release and marker not in (release.get('body') or ''):
+              raise RuntimeError('Existing release is not owned by this source publication')
+          if not verify_tag(required=bool(release and not release['draft'])):
+              api(f'{base}/git/refs', '--method', 'POST', '-f', f'ref=refs/tags/{tag}',
+                  '-f', f'sha={source}')
+          verify_tag()
+
+          if release is None:
+              notes = f'''{marker}
+          SRE 故障演练实验室 {tag} 源码包。
+
+          包含 FastAPI 商品查询、Redis 缓存、故障演练、真实自愈控制器、资源监控、蓝绿发布与回滚、systemd 统一管理，以及测试和使用文档。
+
+          - 源码提交：`{source}`。
+          - ZIP 与 tar.gz 内容相同；下载任意一个即可。`SHA256SUMS` 用于完整性校验。
+          - 这是源码包，不含 Docker 镜像、私有配置或运行数据；首次部署需要构建/拉取镜像，步骤见包内 README.md。
+          - 该提交的 GitHub Actions 代码检查已通过。本地完整测试记录为 244 passed、0 skipped（含真实 Redis）；普通 CI 未配置真实 Redis 时会跳过对应测试。
+          - 实机自愈、发布、回滚和 systemd 验证记录见 docs；重启虚拟机恢复及全新机器离线安装尚未实测。
+
+          在保存了三个下载文件的目录中运行：`sha256sum -c SHA256SUMS`。
+          '''
+              with tempfile.TemporaryDirectory() as tmp:
+                  notes_file = Path(tmp) / 'notes.md'
+                  notes_file.write_text(notes, encoding='utf-8')
+                  gh('release', 'create', tag, '--draft', '--verify-tag', '--target', source,
+                     '--title', f'{tag} · SRE 故障演练实验室源码', '--notes-file', str(notes_file))
+              release = find_release()
+              if release is None:
+                  raise RuntimeError('Created draft release was not found')
+
+          def assets_for(release_id):
+              assets = api(f'{base}/releases/{release_id}/assets?per_page=100')
+              if len({asset['name'] for asset in assets}) != len(assets):
+                  raise RuntimeError('Duplicate release asset names')
+              if set(asset['name'] for asset in assets) - set(names):
+                  raise RuntimeError('Unexpected release assets; refusing to change release')
+              return {asset['name']: asset for asset in assets}
+
+          def verify_asset(asset):
+              name = asset['name']
+              if asset['state'] != 'uploaded' or asset['size'] != (folder / name).stat().st_size:
+                  raise RuntimeError(f'Incomplete or conflicting asset: {name}')
+              data = gh('api', f'{base}/releases/assets/{asset["id"]}',
+                        '-H', 'Accept: application/octet-stream')
+              if hashlib.sha256(data).hexdigest() != expected[name]:
+                  raise RuntimeError(f'Checksum mismatch: {name}')
+
+          assets = assets_for(release['id'])
+          for name in names:
+              if name in assets:
+                  verify_asset(assets[name])
+              elif release['draft']:
+                  gh('release', 'upload', tag, str(folder / name))
+              else:
+                  raise RuntimeError(f'Published release is missing {name}')
+
+          assets = assets_for(release['id'])
+          if set(assets) != set(names):
+              raise RuntimeError('Release asset set mismatch')
+          for asset in assets.values():
+              verify_asset(asset)
+          verify_tag()
+          if release['draft']:
+              gh('release', 'edit', tag, '--draft=false', '--latest')
+          published = api(f'{base}/releases/tags/{tag}')
+          if published['draft'] or published['prerelease']:
+              raise RuntimeError('Release was not published as a stable version')
+          verify_tag()
+          print(published['html_url'])
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a', encoding='utf-8') as summary:
+              summary.write(f'Source release: {published["html_url"]}\n\nCommit: `{source}`\n\n')
+              summary.write('All three assets downloaded and SHA-256 verified before publication.\n')
+          PY
