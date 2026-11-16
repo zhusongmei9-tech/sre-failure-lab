@@ -24,6 +24,7 @@ jobs:
     env:
       SOURCE_SHA: 475db11aab8e77806a8c7450e1eb36285634b0ed
       RELEASE_TAG: v0.3.0
+      ARTIFACT_BASE: sre-failure-lab-source-latest
     steps:
       - uses: actions/checkout@v4
         with:
@@ -43,13 +44,13 @@ jobs:
           PY
           mkdir -p dist/source-release
           prefix="sre-failure-lab-${RELEASE_TAG}"
-          git archive --format=zip --prefix="${prefix}/" "$SOURCE_SHA" > "dist/source-release/${prefix}-source.zip"
-          git archive --format=tar --prefix="${prefix}/" "$SOURCE_SHA" | gzip -n > "dist/source-release/${prefix}-source.tar.gz"
+          git archive --format=zip --prefix="${prefix}/" "$SOURCE_SHA" > "dist/source-release/${ARTIFACT_BASE}.zip"
+          git archive --format=tar --prefix="${prefix}/" "$SOURCE_SHA" | gzip -n > "dist/source-release/${ARTIFACT_BASE}.tar.gz"
           cd dist/source-release
-          unzip -t "${prefix}-source.zip"
-          tar -tzf "${prefix}-source.tar.gz" > /dev/null
-          sha256sum "${prefix}-source.zip" "${prefix}-source.tar.gz" > SHA256SUMS
-          sha256sum --check SHA256SUMS
+          unzip -t "${ARTIFACT_BASE}.zip"
+          tar -tzf "${ARTIFACT_BASE}.tar.gz" > /dev/null
+          sha256sum "${ARTIFACT_BASE}.zip" "${ARTIFACT_BASE}.tar.gz" > "${ARTIFACT_BASE}.sha256"
+          sha256sum --check "${ARTIFACT_BASE}.sha256"
       - name: Upload, verify and publish
         env:
           GH_TOKEN: ${{ github.token }}
@@ -69,10 +70,18 @@ jobs:
           base = f'repos/{repo}'
           marker = f'<!-- source-release: {source} -->'
           folder = Path('dist/source-release')
-          names = [f'sre-failure-lab-{tag}-source.zip',
-                   f'sre-failure-lab-{tag}-source.tar.gz', 'SHA256SUMS']
-          expected = {name: hashlib.sha256((folder / name).read_bytes()).hexdigest()
-                      for name in names}
+          artifact = os.environ['ARTIFACT_BASE']
+          checksum_name = f'{artifact}.sha256'
+          names = [f'{artifact}.zip', f'{artifact}.tar.gz', checksum_name]
+          legacy = {f'sre-failure-lab-{tag}-source.zip': names[0],
+                    f'sre-failure-lab-{tag}-source.tar.gz': names[1]}
+          expected_data = {name: (folder / name).read_bytes() for name in names}
+          expected_data.update({old: expected_data[new] for old, new in legacy.items()})
+          expected_data['SHA256SUMS'] = ''.join(
+              f'{hashlib.sha256(expected_data[old]).hexdigest()}  {old}\n'
+              for old in legacy).encode()
+          expected = {name: hashlib.sha256(data).hexdigest()
+                      for name, data in expected_data.items()}
 
           def gh(*args):
               return subprocess.run(['gh', *args], check=True, capture_output=True).stdout
@@ -131,12 +140,12 @@ jobs:
           包含 FastAPI 商品查询、Redis 缓存、故障演练、真实自愈控制器、资源监控、蓝绿发布与回滚、systemd 统一管理，以及测试和使用文档。
 
           - 源码提交：`{source}`。
-          - ZIP 与 tar.gz 内容相同；下载任意一个即可。`SHA256SUMS` 用于完整性校验。
+          - ZIP 与 tar.gz 内容相同；下载任意一个即可。`{checksum_name}` 用于完整性校验。
           - 这是源码包，不含 Docker 镜像、私有配置或运行数据；首次部署需要构建/拉取镜像，步骤见包内 README.md。
           - 该提交的 GitHub Actions 代码检查已通过。本地完整测试记录为 244 passed、0 skipped（含真实 Redis）；普通 CI 未配置真实 Redis 时会跳过对应测试。
           - 实机自愈、发布、回滚和 systemd 验证记录见 docs；重启虚拟机恢复及全新机器离线安装尚未实测。
 
-          在保存了三个下载文件的目录中运行：`sha256sum -c SHA256SUMS`。
+          在保存了三个下载文件的目录中运行：`sha256sum -c {checksum_name}`。
           '''
               # Use the returned ID: a newly created draft may not appear in the list immediately.
               release = api(f'{base}/releases', '--method', 'POST',
@@ -148,13 +157,13 @@ jobs:
               assets = api(f'{base}/releases/{release_id}/assets?per_page=100')
               if len({asset['name'] for asset in assets}) != len(assets):
                   raise RuntimeError('Duplicate release asset names')
-              if set(asset['name'] for asset in assets) - set(names):
+              if set(asset['name'] for asset in assets) - set(expected_data):
                   raise RuntimeError('Unexpected release assets; refusing to change release')
               return {asset['name']: asset for asset in assets}
 
           def verify_asset(asset):
               name = asset['name']
-              if asset['state'] != 'uploaded' or asset['size'] != (folder / name).stat().st_size:
+              if asset['state'] != 'uploaded' or asset['size'] != len(expected_data[name]):
                   raise RuntimeError(f'Incomplete or conflicting asset: {name}')
               data = gh('api', f'{base}/releases/assets/{asset["id"]}',
                         '-H', 'Accept: application/octet-stream')
@@ -162,21 +171,53 @@ jobs:
                   raise RuntimeError(f'Checksum mismatch: {name}')
 
           assets = assets_for(release['id'])
-          for name in names:
+          # Verify all existing bytes before the explicitly requested filename migration.
+          for asset in assets.values():
+              verify_asset(asset)
+          for old, new in legacy.items():
+              if old in assets and new in assets:
+                  raise RuntimeError(f'Both legacy and new asset names exist: {new}')
+              if old not in assets and new not in assets and not release['draft']:
+                  raise RuntimeError(f'Published release is missing {new}')
+          if release.get('immutable') and set(assets) != set(names):
+              raise RuntimeError('Cannot rename assets on an immutable release')
+
+          # Upload the new checksum first; rename archives in place to preserve their bytes and IDs.
+          for name in [checksum_name, *names[:2]]:
               if name in assets:
-                  verify_asset(assets[name])
-              elif release['draft']:
-                  gh('api', f'https://uploads.github.com/{base}/releases/{release["id"]}/assets?name={name}',
-                     '--method', 'POST', '-H', 'Content-Type: application/octet-stream',
-                     '--input', str(folder / name))
+                  continue
+              old = next((old for old, new in legacy.items() if new == name), None)
+              if old in assets:
+                  updated = api(f'{base}/releases/assets/{assets[old]["id"]}',
+                                '--method', 'PATCH', '-f', f'name={name}')
+                  verify_asset(updated)
+                  assets[name] = updated
+                  del assets[old]
+              elif release['draft'] or name == checksum_name:
+                  uploaded = json.loads(gh(
+                      'api', f'https://uploads.github.com/{base}/releases/{release["id"]}/assets?name={name}',
+                      '--method', 'POST', '-H', 'Content-Type: application/octet-stream',
+                      '--input', str(folder / name)))
+                  verify_asset(uploaded)
+                  assets[name] = uploaded
               else:
                   raise RuntimeError(f'Published release is missing {name}')
 
           assets = assets_for(release['id'])
-          if set(assets) != set(names):
+          if not set(names).issubset(assets):
               raise RuntimeError('Release asset set mismatch')
           for asset in assets.values():
               verify_asset(asset)
+          body = release.get('body') or ''
+          if 'SHA256SUMS' in body:
+              api(f'{base}/releases/{release["id"]}', '--method', 'PATCH',
+                  '-f', f'body={body.replace("SHA256SUMS", checksum_name)}')
+          if 'SHA256SUMS' in assets:
+              # The replacement is verified, and the old checksum contents matched above.
+              gh('api', f'{base}/releases/assets/{assets["SHA256SUMS"]["id"]}', '--method', 'DELETE')
+          assets = assets_for(release['id'])
+          if set(assets) != set(names):
+              raise RuntimeError('Final release asset set mismatch')
           verify_tag()
           if release['draft']:
               api(f'{base}/releases/{release["id"]}', '--method', 'PATCH',
