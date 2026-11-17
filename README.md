@@ -1,6 +1,8 @@
-# SRE Failure Lab｜SRE 故障演练实验室
+# SRE Failure Lab v0.4.0｜SRE 故障演练实验室
 
 一个面向 SRE 学习与实践的单机实验项目：以 FastAPI 商品查询和 Redis 缓存为业务，练习故障注入、资源观测、真实自愈、蓝绿发布和回滚。提供 Docker Compose 教学环境，以及由 Linux systemd 统一管理的真实运行环境。
+
+**v0.4.0 源码下载：[sre-faliure-lab-v0.4.0.tar.gz](https://github.com/zhusongmei9-tech/sre-failure-lab/releases/download/v0.4.0/sre-faliure-lab-v0.4.0.tar.gz)**。本版本增加 K3s 单节点监控，复用已有 Grafana；源码包不含 Docker 镜像或开发依赖，安装需要联网。Kubernetes 安装脚本支持 Linux ARM64 与 AMD64，本轮仅在 ARM64 实机完成验收。
 
 ## 能做什么
 
@@ -10,6 +12,7 @@
 - **资源可观测**：Prometheus 与 Grafana 展示业务、缓存、CPU、内存、文件系统及磁盘指标；node_exporter 采集主机指标，cAdvisor 采集容器 CPU/内存。
 - **可控发布与回滚**：固定镜像 ID、候选检查、Nginx 切流、发布后观察、失败自动回退及手动回滚。
 - **统一服务管理**：一个 `sre-lab` 服务管理容器与自愈进程，支持启停、重启和开机配置，保留发布记录与恢复预算。
+- **Kubernetes 监控**：K3s、Prometheus Operator 与 kube-state-metrics 提供节点、Pod、Deployment 和 PVC 观测，支持独立演示 Pod 删除后的自动补建验收。
 
 ## 架构
 
@@ -59,6 +62,8 @@ curl -i http://127.0.0.1:8000/products/1
 ## Linux 真实环境
 
 需要使用 systemd 的 Linux、Docker Engine/Compose、宿主机 Python 3.9+ 和管理员权限。将源码放到新的 `/opt/sre-failure-lab`，在 root 会话中首次初始化；已有部署不要重新 init：
+
+下文 `0.3.0`、`0.3.1` 是保留的业务镜像演练版本，与项目源码发布版本 `v0.4.0` 独立；项目版本升级不会自动替换已部署镜像。
 
 ```bash
 cd /opt/sre-failure-lab
@@ -112,7 +117,7 @@ sudo bash scripts/install_k8s_grafana.sh
 sudo k3s kubectl apply -f monitoring/kubernetes/demo.yaml
 ```
 
-Grafana 新增 `Kubernetes` 数据源和 `/d/sre-lab-kubernetes` 看板。安装版本、资源要求、验收步骤与限制见 [Kubernetes 监控说明](docs/kubernetes-monitoring.md)。
+Grafana 新增 `Kubernetes` 数据源和 `/d/sre-lab-kubernetes` 看板。安装版本、资源要求、验收步骤与限制见 [Kubernetes 监控说明](docs/kubernetes-monitoring.md)。ARM64 实机已验证 8 个采集目标 UP、48 次看板查询成功，以及演示 Pod 删除后新 UID 恢复 Ready；详见 [Kubernetes 验收记录](docs/kubernetes-validation-137.md)。这不代表 AMD64、整机重启或跨节点接管已经验收。
 
 ## 开发与测试
 
@@ -142,9 +147,9 @@ Linux 实机已完成 Redis/API 停止后的真实自愈、正常发布、手动
 
 开机启动配置已核实，**实际重启虚拟机后的恢复尚未实测**；全新机器的离线安装也尚未完成现场验收。既有内网机器地址仅用于历史记录，不是公共演示服务。
 
-## 离线安装包
+## 历史离线安装包
 
-本地已制作约 **706 MB** 的 Linux ARM64 `tar.gz` 包，包含源码、统一服务配置和八个 Docker 镜像。它不在 Git 仓库中，目前也未发布为 GitHub Release；克隆仓库不会获得这些镜像。新机器安装步骤与前提见 [离线包使用说明](离线包使用说明.md)，检查结果见 [离线交付校验](docs/offline-package-validation.md)。该包不包含现有凭据或监控数据备份。
+此前为 Compose 实验室制作的约 **706 MB** Linux ARM64 离线包保留在本地，包含当时的源码、统一服务配置和八个 Docker 镜像，不包含本次 Kubernetes 交付。它不在 Git 仓库或本次 v0.4.0 Release 中；本版本下载入口为页首的联网安装源码包。历史说明见 [离线包使用说明](离线包使用说明.md) 和 [离线交付校验](docs/offline-package-validation.md)。
 
 ## 进一步阅读
 
