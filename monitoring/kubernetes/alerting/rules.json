@@ -1,0 +1,61 @@
+{
+  "groups": [
+    {
+      "name": "sre-lab-optional",
+      "rules": [
+        {
+          "alert": "SRENodeMemoryPressure",
+          "expr": "(1 - node_memory_MemAvailable_bytes{job=\"node-exporter\"} / node_memory_MemTotal_bytes{job=\"node-exporter\"}) > 0.85",
+          "for": "2m",
+          "labels": {
+            "severity": "warning",
+            "module": "sre-lab-optional"
+          },
+          "annotations": {
+            "summary": "Node available memory is below 15 percent",
+            "runbook_url": "https://github.com/zhusongmei9-tech/sre-failure-lab/blob/main/docs/kubernetes-alerting.md#node-memory"
+          }
+        },
+        {
+          "alert": "SRENodeDiskSpaceLow",
+          "expr": "(node_filesystem_avail_bytes{job=\"node-exporter\",fstype!~\"tmpfs|overlay|squashfs\"} / node_filesystem_size_bytes{job=\"node-exporter\",fstype!~\"tmpfs|overlay|squashfs\"} < 0.15) and on(instance, device, mountpoint) (node_filesystem_readonly{job=\"node-exporter\"} == 0)",
+          "for": "2m",
+          "labels": {
+            "severity": "warning",
+            "module": "sre-lab-optional"
+          },
+          "annotations": {
+            "summary": "Writable node filesystem has less than 15 percent free space",
+            "runbook_url": "https://github.com/zhusongmei9-tech/sre-failure-lab/blob/main/docs/kubernetes-alerting.md#node-disk"
+          }
+        },
+        {
+          "alert": "SREPodRepeatedRestarts",
+          "expr": "sum by (namespace, pod) (increase(kube_pod_container_status_restarts_total{namespace=~\"sre-k8s-demo|sre-monitoring\"}[5m])) >= 3",
+          "for": "1m",
+          "labels": {
+            "severity": "warning",
+            "module": "sre-lab-optional"
+          },
+          "annotations": {
+            "summary": "Pod restarted at least three times within five minutes",
+            "runbook_url": "https://github.com/zhusongmei9-tech/sre-failure-lab/blob/main/docs/kubernetes-alerting.md#pod-restarts"
+          }
+        },
+        {
+          "alert": "SREDemoDeploymentUnavailable",
+          "expr": "(kube_deployment_status_replicas_available{namespace=\"sre-k8s-demo\",deployment=\"demo-web\"} < kube_deployment_spec_replicas{namespace=\"sre-k8s-demo\",deployment=\"demo-web\"}) and (kube_deployment_spec_replicas{namespace=\"sre-k8s-demo\",deployment=\"demo-web\"} > 0)",
+          "for": "1m",
+          "labels": {
+            "severity": "warning",
+            "module": "sre-lab-optional"
+          },
+          "annotations": {
+            "summary": "Demo Deployment has fewer available replicas than requested",
+            "runbook_url": "https://github.com/zhusongmei9-tech/sre-failure-lab/blob/main/docs/kubernetes-alerting.md#demo-unavailable"
+          }
+        }
+      ]
+    }
+  ]
+}

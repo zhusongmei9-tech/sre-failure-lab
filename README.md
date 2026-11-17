@@ -1,8 +1,10 @@
-# SRE Failure Lab v0.4.0｜SRE 故障演练实验室
+# SRE Failure Lab｜SRE 故障演练实验室
 
 一个面向 SRE 学习与实践的单机实验项目：以 FastAPI 商品查询和 Redis 缓存为业务，练习故障注入、资源观测、真实自愈、蓝绿发布和回滚。提供 Docker Compose 教学环境，以及由 Linux systemd 统一管理的真实运行环境。
 
-**v0.4.0 源码下载：[sre-faliure-lab-v0.4.0.tar.gz](https://github.com/zhusongmei9-tech/sre-failure-lab/releases/download/v0.4.0/sre-faliure-lab-v0.4.0.tar.gz)**。本版本增加 K3s 单节点监控，复用已有 Grafana；源码包不含 Docker 镜像或开发依赖，安装需要联网。Kubernetes 安装脚本支持 Linux ARM64 与 AMD64，本轮仅在 ARM64 实机完成验收。
+**已发布 v0.4.0 源码下载：[sre-faliure-lab-v0.4.0.tar.gz](https://github.com/zhusongmei9-tech/sre-failure-lab/releases/download/v0.4.0/sre-faliure-lab-v0.4.0.tar.gz)**。本版本增加 K3s 单节点监控，复用已有 Grafana；源码包不含 Docker 镜像或开发依赖，安装需要联网。Kubernetes 安装脚本支持 Linux ARM64 与 AMD64，本轮仅在 ARM64 实机完成验收。
+
+当前 `main` 还增加了面向“尚无集群”的准备流程：主机预检、重启前后验收、可选告警接收与受控演示。先从 [无集群准备与验收路线](docs/kubernetes-readiness.md) 开始；这些新增内容尚未包含在上面的 v0.4.0 下载包中，现场运行结果仍待验证。
 
 ## 能做什么
 
@@ -118,6 +120,8 @@ sudo k3s kubectl apply -f monitoring/kubernetes/demo.yaml
 ```
 
 Grafana 新增 `Kubernetes` 数据源和 `/d/sre-lab-kubernetes` 看板。安装版本、资源要求、验收步骤与限制见 [Kubernetes 监控说明](docs/kubernetes-monitoring.md)。ARM64 实机已验证 8 个采集目标 UP、48 次看板查询成功，以及演示 Pod 删除后新 UID 恢复 Ready；详见 [Kubernetes 验收记录](docs/kubernetes-validation-137.md)。这不代表 AMD64、整机重启或跨节点接管已经验收。
+
+安装前检查、告警闭环与受控演示见 [后续验收路线](docs/kubernetes-readiness.md)。当前没有可用集群也可以执行计划模式、单元测试和 Helm/Prometheus 配置检查；历史实机报告不表示本轮新增功能已经在现场通过。
 
 ## 开发与测试
 

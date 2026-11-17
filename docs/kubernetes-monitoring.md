@@ -2,7 +2,7 @@
 
 这一阶段在现有 Docker Compose 实验室旁增加一个单节点 K3s 集群，观察节点、命名空间、Pod、Deployment 和容器资源。原商品 API、Redis、蓝绿发布与 `ops.heal` 仍由原有 Compose/systemd 流程管理，没有迁移成 Kubernetes 工作负载。
 
-2026-11-17 已在 137 的 ARM64 虚拟机完成安装、指标查询与演示 Pod 删除恢复，见 [本轮验收记录](kubernetes-validation-137.md)。单节点不具备宿主机故障后的跨节点接管能力。
+2026-11-17 已在 137 的 ARM64 虚拟机完成安装、指标查询与演示 Pod 删除恢复，见 [历史验收记录](kubernetes-validation-137.md)。这份历史记录不代表当前环境有可用集群；尚无集群时请从 [准备与验收路线](kubernetes-readiness.md) 开始。单节点不具备宿主机故障后的跨节点接管能力。
 
 ## 组件和配置
 
@@ -20,7 +20,7 @@
 
 采集保留 API Server、kubelet、kubelet 内置 cAdvisor、kube-state-metrics 和 node_exporter，以及 Prometheus/Operator 自身。K3s 把部分控制面组件放在同一进程中，本配置不创建 scheduler、controller-manager、etcd、kube-proxy 的独立监控目标，也关闭相应默认规则，避免不存在的端点产生告警。本阶段暂不采集 CoreDNS；这不等于关闭集群 DNS。K3s 的组件指标关系见 [官方指标说明](https://docs.k3s.io/reference/metrics)。
 
-为降低开销，chart 内的 Grafana 和 Alertmanager 均关闭。Prometheus 仍评估保留的告警规则，但本阶段没有告警通知接收端；与 Alertmanager 连接相关的默认告警也显式关闭。
+基础配置为降低开销，关闭 chart 内的 Grafana 和 Alertmanager。Prometheus 仍评估保留的告警规则，但本阶段没有告警通知接收端；与 Alertmanager 连接相关的默认告警也显式关闭。仓库另提供 [可选告警模块](kubernetes-alerting.md)，通过额外 values 文件启用；本轮新增通知链路尚待集群验收。
 
 ## 资源与权限边界
 
@@ -104,15 +104,17 @@ journalctl -u sre-lab-k8s-prometheus -n 50 --no-pager
 
 演示对象是 `sre-k8s-demo` 中唯一的 `demo-web` Pod。删除后 Deployment/ReplicaSet 控制器发现实际副本少于期望副本，创建一个新 Pod；这属于 Kubernetes 调谐。原来的 `ops.heal` 只控制 Docker Compose 的 Redis 和活动 API，不参与该过程。
 
-项目验收脚本检查指标和抓取目标，并可执行一次受限删除：
+指标验收脚本保持只读，检查真实指标和抓取目标：
 
 ```bash
 cd /opt/sre-failure-lab
 LAB_DOCKER_GATEWAY=$(docker network inspect bridge --format '{{(index .IPAM.Config 0).Gateway}}')
 python3 scripts/accept_k8s.py \
   --prometheus-url "http://${LAB_DOCKER_GATEWAY}:19090" \
-  --exercise-recovery --output reports/kubernetes-acceptance.json
+  --output reports/kubernetes-acceptance.json
 ```
+
+需要执行删除演练时，使用 [受控演示脚本](kubernetes-demo.md)，显式指定 context 并先完成管理标签、Deployment/ReplicaSet/Pod UID 链验证。旧 `--exercise-recovery` 参数会明确拒绝操作，防止从旧入口绕过范围检查。
 
 验收应保留删除前后的 Pod UID、时间及 Ready 状态，同时检查节点、命名空间、Pod、Deployment、CPU、内存等指标实际存在，而不是仅看到 Pod 为 Running。新 Pod 的 UID 必须不同；容器 `restartCount` 未必增加，因为这是创建新 Pod，并非原 Pod 中的进程重启。
 

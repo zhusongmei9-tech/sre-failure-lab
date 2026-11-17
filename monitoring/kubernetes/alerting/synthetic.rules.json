@@ -1,0 +1,23 @@
+{
+  "groups": [
+    {
+      "name": "sre-lab-synthetic",
+      "rules": [
+        {
+          "alert": "SRELabSynthetic",
+          "expr": "vector(1) == 1",
+          "for": "30s",
+          "labels": {
+            "severity": "info",
+            "module": "sre-lab-optional",
+            "synthetic": "true"
+          },
+          "annotations": {
+            "summary": "Explicit synthetic notification-path test; no workload failure injected",
+            "runbook_url": "https://github.com/zhusongmei9-tech/sre-failure-lab/blob/main/docs/kubernetes-alerting.md#synthetic"
+          }
+        }
+      ]
+    }
+  ]
+}

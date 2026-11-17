@@ -1,0 +1,344 @@
+{
+  "rule_files": [
+    "rules.json",
+    "synthetic.rules.json"
+  ],
+  "evaluation_interval": "30s",
+  "tests": [
+    {
+      "name": "memory-sustained-pressure-then-recovery",
+      "interval": "30s",
+      "input_series": [
+        {
+          "series": "node_memory_MemTotal_bytes{job=\"node-exporter\",instance=\"node:19100\"}",
+          "values": "100+0x12"
+        },
+        {
+          "series": "node_memory_MemAvailable_bytes{job=\"node-exporter\",instance=\"node:19100\"}",
+          "values": "10+0x5 60+0x7"
+        }
+      ],
+      "alert_rule_test": [
+        {
+          "eval_time": "90s",
+          "alertname": "SRENodeMemoryPressure",
+          "exp_alerts": []
+        },
+        {
+          "eval_time": "2m",
+          "alertname": "SRENodeMemoryPressure",
+          "exp_alerts": [
+            {
+              "exp_labels": {
+                "job": "node-exporter",
+                "instance": "node:19100",
+                "severity": "warning",
+                "module": "sre-lab-optional"
+              },
+              "exp_annotations": {
+                "summary": "Node available memory is below 15 percent",
+                "runbook_url": "https://github.com/zhusongmei9-tech/sre-failure-lab/blob/main/docs/kubernetes-alerting.md#node-memory"
+              }
+            }
+          ]
+        },
+        {
+          "eval_time": "3m",
+          "alertname": "SRENodeMemoryPressure",
+          "exp_alerts": []
+        }
+      ]
+    },
+    {
+      "name": "memory-short-spike-is-not-an-alert",
+      "interval": "30s",
+      "input_series": [
+        {
+          "series": "node_memory_MemTotal_bytes{job=\"node-exporter\",instance=\"node:19100\"}",
+          "values": "100+0x12"
+        },
+        {
+          "series": "node_memory_MemAvailable_bytes{job=\"node-exporter\",instance=\"node:19100\"}",
+          "values": "10+0x2 60+0x9"
+        }
+      ],
+      "alert_rule_test": [
+        {
+          "eval_time": "2m",
+          "alertname": "SRENodeMemoryPressure",
+          "exp_alerts": []
+        }
+      ]
+    },
+    {
+      "name": "disk-pressure-and-recovery",
+      "interval": "30s",
+      "input_series": [
+        {
+          "series": "node_filesystem_size_bytes{job=\"node-exporter\",instance=\"node:19100\",device=\"/dev/vda1\",mountpoint=\"/\",fstype=\"ext4\"}",
+          "values": "100+0x12"
+        },
+        {
+          "series": "node_filesystem_avail_bytes{job=\"node-exporter\",instance=\"node:19100\",device=\"/dev/vda1\",mountpoint=\"/\",fstype=\"ext4\"}",
+          "values": "10+0x5 50+0x7"
+        },
+        {
+          "series": "node_filesystem_readonly{job=\"node-exporter\",instance=\"node:19100\",device=\"/dev/vda1\",mountpoint=\"/\",fstype=\"ext4\"}",
+          "values": "0+0x12"
+        }
+      ],
+      "alert_rule_test": [
+        {
+          "eval_time": "90s",
+          "alertname": "SRENodeDiskSpaceLow",
+          "exp_alerts": []
+        },
+        {
+          "eval_time": "2m",
+          "alertname": "SRENodeDiskSpaceLow",
+          "exp_alerts": [
+            {
+              "exp_labels": {
+                "job": "node-exporter",
+                "instance": "node:19100",
+                "device": "/dev/vda1",
+                "mountpoint": "/",
+                "fstype": "ext4",
+                "severity": "warning",
+                "module": "sre-lab-optional"
+              },
+              "exp_annotations": {
+                "summary": "Writable node filesystem has less than 15 percent free space",
+                "runbook_url": "https://github.com/zhusongmei9-tech/sre-failure-lab/blob/main/docs/kubernetes-alerting.md#node-disk"
+              }
+            }
+          ]
+        },
+        {
+          "eval_time": "3m",
+          "alertname": "SRENodeDiskSpaceLow",
+          "exp_alerts": []
+        }
+      ]
+    },
+    {
+      "name": "read-only-and-tmpfs-are-excluded",
+      "interval": "30s",
+      "input_series": [
+        {
+          "series": "node_filesystem_size_bytes{job=\"node-exporter\",instance=\"node:19100\",device=\"/dev/vda1\",mountpoint=\"/\",fstype=\"ext4\"}",
+          "values": "100+0x12"
+        },
+        {
+          "series": "node_filesystem_avail_bytes{job=\"node-exporter\",instance=\"node:19100\",device=\"/dev/vda1\",mountpoint=\"/\",fstype=\"ext4\"}",
+          "values": "1+0x12"
+        },
+        {
+          "series": "node_filesystem_readonly{job=\"node-exporter\",instance=\"node:19100\",device=\"/dev/vda1\",mountpoint=\"/\",fstype=\"ext4\"}",
+          "values": "1+0x12"
+        },
+        {
+          "series": "node_filesystem_size_bytes{job=\"node-exporter\",instance=\"node:19100\",device=\"tmpfs\",mountpoint=\"/run\",fstype=\"tmpfs\"}",
+          "values": "100+0x12"
+        },
+        {
+          "series": "node_filesystem_avail_bytes{job=\"node-exporter\",instance=\"node:19100\",device=\"tmpfs\",mountpoint=\"/run\",fstype=\"tmpfs\"}",
+          "values": "1+0x12"
+        },
+        {
+          "series": "node_filesystem_readonly{job=\"node-exporter\",instance=\"node:19100\",device=\"tmpfs\",mountpoint=\"/run\",fstype=\"tmpfs\"}",
+          "values": "0+0x12"
+        }
+      ],
+      "alert_rule_test": [
+        {
+          "eval_time": "3m",
+          "alertname": "SRENodeDiskSpaceLow",
+          "exp_alerts": []
+        }
+      ]
+    },
+    {
+      "name": "pod-restart-burst-and-recovery",
+      "interval": "30s",
+      "input_series": [
+        {
+          "series": "kube_pod_container_status_restarts_total{namespace=\"sre-k8s-demo\",pod=\"demo-web-abc\",container=\"web\"}",
+          "values": "0+1x6 6+0x20"
+        }
+      ],
+      "alert_rule_test": [
+        {
+          "eval_time": "1m",
+          "alertname": "SREPodRepeatedRestarts",
+          "exp_alerts": []
+        },
+        {
+          "eval_time": "4m",
+          "alertname": "SREPodRepeatedRestarts",
+          "exp_alerts": [
+            {
+              "exp_labels": {
+                "namespace": "sre-k8s-demo",
+                "pod": "demo-web-abc",
+                "severity": "warning",
+                "module": "sre-lab-optional"
+              },
+              "exp_annotations": {
+                "summary": "Pod restarted at least three times within five minutes",
+                "runbook_url": "https://github.com/zhusongmei9-tech/sre-failure-lab/blob/main/docs/kubernetes-alerting.md#pod-restarts"
+              }
+            }
+          ]
+        },
+        {
+          "eval_time": "12m",
+          "alertname": "SREPodRepeatedRestarts",
+          "exp_alerts": []
+        }
+      ]
+    },
+    {
+      "name": "counter-reset-and-other-namespace-do-not-page",
+      "interval": "30s",
+      "input_series": [
+        {
+          "series": "kube_pod_container_status_restarts_total{namespace=\"sre-k8s-demo\",pod=\"demo-web-abc\",container=\"web\"}",
+          "values": "10+0x5 0+0x12"
+        },
+        {
+          "series": "kube_pod_container_status_restarts_total{namespace=\"unrelated\",pod=\"other\",container=\"web\"}",
+          "values": "0+10x20"
+        }
+      ],
+      "alert_rule_test": [
+        {
+          "eval_time": "5m",
+          "alertname": "SREPodRepeatedRestarts",
+          "exp_alerts": []
+        }
+      ]
+    },
+    {
+      "name": "deployment-unavailable-then-ready",
+      "interval": "30s",
+      "input_series": [
+        {
+          "series": "kube_deployment_spec_replicas{namespace=\"sre-k8s-demo\",deployment=\"demo-web\"}",
+          "values": "1+0x10"
+        },
+        {
+          "series": "kube_deployment_status_replicas_available{namespace=\"sre-k8s-demo\",deployment=\"demo-web\"}",
+          "values": "0+0x3 1+0x7"
+        }
+      ],
+      "alert_rule_test": [
+        {
+          "eval_time": "30s",
+          "alertname": "SREDemoDeploymentUnavailable",
+          "exp_alerts": []
+        },
+        {
+          "eval_time": "1m",
+          "alertname": "SREDemoDeploymentUnavailable",
+          "exp_alerts": [
+            {
+              "exp_labels": {
+                "namespace": "sre-k8s-demo",
+                "deployment": "demo-web",
+                "severity": "warning",
+                "module": "sre-lab-optional"
+              },
+              "exp_annotations": {
+                "summary": "Demo Deployment has fewer available replicas than requested",
+                "runbook_url": "https://github.com/zhusongmei9-tech/sre-failure-lab/blob/main/docs/kubernetes-alerting.md#demo-unavailable"
+              }
+            }
+          ]
+        },
+        {
+          "eval_time": "2m",
+          "alertname": "SREDemoDeploymentUnavailable",
+          "exp_alerts": []
+        }
+      ]
+    },
+    {
+      "name": "intentional-zero-replicas-is-not-unavailability",
+      "interval": "30s",
+      "input_series": [
+        {
+          "series": "kube_deployment_spec_replicas{namespace=\"sre-k8s-demo\",deployment=\"demo-web\"}",
+          "values": "0+0x10"
+        },
+        {
+          "series": "kube_deployment_status_replicas_available{namespace=\"sre-k8s-demo\",deployment=\"demo-web\"}",
+          "values": "0+0x10"
+        }
+      ],
+      "alert_rule_test": [
+        {
+          "eval_time": "2m",
+          "alertname": "SREDemoDeploymentUnavailable",
+          "exp_alerts": []
+        }
+      ]
+    },
+    {
+      "name": "absent-series-is-not-synthetic-health",
+      "interval": "30s",
+      "input_series": [],
+      "alert_rule_test": [
+        {
+          "eval_time": "5m",
+          "alertname": "SRENodeMemoryPressure",
+          "exp_alerts": []
+        },
+        {
+          "eval_time": "5m",
+          "alertname": "SRENodeDiskSpaceLow",
+          "exp_alerts": []
+        },
+        {
+          "eval_time": "5m",
+          "alertname": "SREPodRepeatedRestarts",
+          "exp_alerts": []
+        },
+        {
+          "eval_time": "5m",
+          "alertname": "SREDemoDeploymentUnavailable",
+          "exp_alerts": []
+        }
+      ]
+    },
+    {
+      "name": "explicit-synthetic-rule-has-a-pending-window",
+      "interval": "30s",
+      "input_series": [],
+      "alert_rule_test": [
+        {
+          "eval_time": "0s",
+          "alertname": "SRELabSynthetic",
+          "exp_alerts": []
+        },
+        {
+          "eval_time": "30s",
+          "alertname": "SRELabSynthetic",
+          "exp_alerts": [
+            {
+              "exp_labels": {
+                "severity": "info",
+                "module": "sre-lab-optional",
+                "synthetic": "true"
+              },
+              "exp_annotations": {
+                "summary": "Explicit synthetic notification-path test; no workload failure injected",
+                "runbook_url": "https://github.com/zhusongmei9-tech/sre-failure-lab/blob/main/docs/kubernetes-alerting.md#synthetic"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

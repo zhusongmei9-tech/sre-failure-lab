@@ -1,0 +1,47 @@
+# OPTIONAL overlay for kube-prometheus-stack 93.3.1; apply AFTER ../values.yaml.
+# Only module=sre-lab-optional alerts are delivered to the internal lab receiver.
+alertmanager:
+  enabled: true
+  service:
+    type: ClusterIP
+  ingress:
+    enabled: false
+  config:
+    global:
+      resolve_timeout: 1m
+    inhibit_rules: []
+    route:
+      receiver: discard
+      group_by: [alertname, namespace, pod, instance, run_id]
+      group_wait: 5s
+      group_interval: 10s
+      repeat_interval: 30m
+      routes:
+        - receiver: lab-webhook
+          matchers: ['module="sre-lab-optional"']
+    receivers:
+      - name: discard
+      - name: lab-webhook
+        webhook_configs:
+          - url: http://sre-k8s-alert-receiver.sre-monitoring.svc:8080/alerts
+            send_resolved: true
+            max_alerts: 20
+            timeout: 5s
+    templates: []
+  alertmanagerSpec:
+    replicas: 1
+    retention: 24h
+    resources:
+      requests: {cpu: 20m, memory: 32Mi}
+      limits: {cpu: 100m, memory: 128Mi}
+    storage:
+      emptyDir:
+        sizeLimit: 128Mi
+
+defaultRules:
+  rules:
+    alertmanager: true
+  disabled:
+    PrometheusNotConnectedToAlertmanagers: false
+    PrometheusErrorSendingAlertsToSomeAlertmanagers: false
+    PrometheusErrorSendingAlertsToAnyAlertmanager: false

@@ -26,3 +26,52 @@ jobs:
           node-version: '22'
       - name: Console DOM contract tests (not rendering)
         run: node --test tests/console.test.cjs
+  kubernetes-config:
+    name: Kubernetes configuration (no cluster)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install locked validation dependencies
+        run: |
+          python -m pip install uv==0.9.5
+          uv sync --locked
+      - name: Download pinned validation tools and chart
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/k8s-tools"
+          cd "$RUNNER_TEMP/k8s-tools"
+          curl --fail --location --silent --show-error --retry 2 --max-time 180 \
+            https://get.helm.sh/helm-v4.3.2-linux-amd64.tar.gz -o helm.tar.gz
+          curl --fail --location --silent --show-error --retry 2 --max-time 180 \
+            https://github.com/prometheus/prometheus/releases/download/v3.16.0/prometheus-3.16.0.linux-amd64.tar.gz -o prometheus.tar.gz
+          curl --fail --location --silent --show-error --retry 2 --max-time 180 \
+            https://github.com/prometheus/alertmanager/releases/download/v0.35.0/alertmanager-0.35.0.linux-amd64.tar.gz -o alertmanager.tar.gz
+          curl --fail --location --silent --show-error --retry 2 --max-time 180 \
+            https://github.com/prometheus-community/helm-charts/releases/download/kube-prometheus-stack-93.3.1/kube-prometheus-stack-93.3.1.tgz -o chart.tgz
+          printf '%s\n' \
+            'd1c0278d46beab79582d7e50f5b3dc206944ba8e577cde618513fd07daa53983  helm.tar.gz' \
+            '68727009472a2c02e1ff7f062fd5b3e637285bffc8fc2d340c76fb449d6e0f34  prometheus.tar.gz' \
+            '6c7752a903c40c8a749e0b29df9240437e4fbb8228068d0af8807377db32addd  alertmanager.tar.gz' \
+            'a7fbf983aadc20548c167c40ba2e78fecbf03753830911130419a16064c91aff  chart.tgz' | sha256sum --check
+          tar -xzf helm.tar.gz linux-amd64/helm
+          tar -xzf prometheus.tar.gz prometheus-3.16.0.linux-amd64/promtool
+          tar -xzf alertmanager.tar.gz alertmanager-0.35.0.linux-amd64/amtool
+      - name: Render profiles and test alert rules without a cluster
+        run: |
+          uv run --locked python scripts/validate_k8s.py \
+            --chart "$RUNNER_TEMP/k8s-tools/chart.tgz" \
+            --helm "$RUNNER_TEMP/k8s-tools/linux-amd64/helm" \
+            --promtool "$RUNNER_TEMP/k8s-tools/prometheus-3.16.0.linux-amd64/promtool" \
+            --amtool "$RUNNER_TEMP/k8s-tools/alertmanager-0.35.0.linux-amd64/amtool"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kubernetes-configuration-report
+          path: reports/kubernetes-config-validation.json
+          if-no-files-found: ignore
+          retention-days: 7

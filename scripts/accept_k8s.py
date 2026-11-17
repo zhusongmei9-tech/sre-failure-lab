@@ -1,10 +1,12 @@
-"""Verify the optional Kubernetes lab; only --exercise-recovery deletes a demo Pod."""
+"""Read-only metric checks for the optional Kubernetes lab.
+
+Use demo_k8s.py for explicitly scoped Pod recovery exercises.
+"""
 
 import argparse
 import json
 import math
 import subprocess
-import time
 from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import urlencode
@@ -40,6 +42,9 @@ def main():
     parser.add_argument("--output", default="reports/kubernetes-acceptance.json")
     parser.add_argument("--exercise-recovery", action="store_true")
     args = parser.parse_args()
+    if args.exercise_recovery:
+        parser.error("Use scripts/demo_k8s.py --execute with an explicit --context; "
+                     "this metrics checker is read-only")
     base = args.prometheus_url.rstrip("/")
     nodes = json.loads(kubectl("get", "nodes", "-o", "json"))["items"]
     if not nodes or not all(ready(node) for node in nodes):
@@ -87,45 +92,6 @@ def main():
         "metrics": samples,
         "recovery": {"tested": False},
     }
-    if args.exercise_recovery:
-        pods = json.loads(kubectl("-n", "sre-k8s-demo", "get", "pods", "-o", "json"))["items"]
-        candidates = [
-            pod
-            for pod in pods
-            if ready(pod)
-            and any(r["kind"] == "ReplicaSet" for r in pod["metadata"].get("ownerReferences", []))
-        ]
-        if len(candidates) != 1:
-            raise RuntimeError("Expected one Ready ReplicaSet-owned demo Pod")
-        old = candidates[0]
-        controller_uid = old["metadata"]["ownerReferences"][0]["uid"]
-        started = time.monotonic()
-        kubectl("-n", "sre-k8s-demo", "delete", "pod", old["metadata"]["name"], "--wait=true")
-        while time.monotonic() - started < 180:
-            pods = json.loads(kubectl("-n", "sre-k8s-demo", "get", "pods", "-o", "json"))["items"]
-            replacements = [
-                pod
-                for pod in pods
-                if ready(pod)
-                and pod["metadata"]["uid"] != old["metadata"]["uid"]
-                and any(
-                    r["uid"] == controller_uid for r in pod["metadata"].get("ownerReferences", [])
-                )
-            ]
-            if replacements:
-                report["recovery"] = {
-                    "tested": True,
-                    "old_pod": old["metadata"]["name"],
-                    "old_uid": old["metadata"]["uid"],
-                    "new_pod": replacements[0]["metadata"]["name"],
-                    "new_uid": replacements[0]["metadata"]["uid"],
-                    "ready_after_seconds": round(time.monotonic() - started, 2),
-                    "mechanism": "Kubernetes ReplicaSet reconciliation after demo Pod deletion",
-                }
-                break
-            time.sleep(2)
-        else:
-            raise RuntimeError("Demo Pod replacement did not become Ready within 180 seconds")
     output = Path(args.output)
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(report, indent=2) + "\n")
