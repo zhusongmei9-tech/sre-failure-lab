@@ -18,3 +18,5 @@ support/
 *.zip
 *.pem
 *.key
+monitoring/grafana/provisioning/datasources/*.local.yml
+*.kubeconfig

@@ -1,0 +1,28 @@
+# Managed by scripts/install_k8s_grafana.sh
+[Unit]
+Description=SRE Lab Kubernetes Prometheus bridge for Grafana
+After=network-online.target docker.service k3s.service
+Wants=network-online.target
+BindsTo=k3s.service
+PartOf=k3s.service
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+Environment=KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+EnvironmentFile=/etc/sre-lab/kubernetes-monitoring.env
+RuntimeDirectory=sre-lab-k8s-prometheus
+RuntimeDirectoryMode=0700
+ExecStart=/usr/local/bin/k3s kubectl --cache-dir=/run/sre-lab-k8s-prometheus/cache --namespace=sre-monitoring port-forward --address=${K8S_PROMETHEUS_BIND_ADDRESS} service/sre-k8s-prometheus 19090:9090 --pod-running-timeout=90s
+Restart=always
+RestartSec=5
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+MemoryMax=192M
+
+[Install]
+WantedBy=k3s.service

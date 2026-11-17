@@ -1,0 +1,1025 @@
+{
+  "uid": "sre-lab-kubernetes",
+  "title": "SRE Lab · Kubernetes",
+  "description": "单节点 K3s 集群监控。独立数据源 uid=kubernetes；cluster 是此数据源的静态集群标识，不依赖只用于外部通信的 Prometheus externalLabels。查询兼容 kube-prometheus-stack 93.3.1 的 kubelet/node-exporter 抓取标签。",
+  "tags": [
+    "sre",
+    "lab",
+    "kubernetes"
+  ],
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "30s",
+  "timezone": "browser",
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "editable": false,
+  "graphTooltip": 1,
+  "templating": {
+    "list": [
+      {
+        "name": "cluster",
+        "label": "集群（独立数据源）",
+        "type": "custom",
+        "query": "sre-lab-k3s",
+        "current": {
+          "text": "sre-lab-k3s",
+          "value": "sre-lab-k3s",
+          "selected": true
+        },
+        "options": [
+          {
+            "text": "sre-lab-k3s",
+            "value": "sre-lab-k3s",
+            "selected": true
+          }
+        ],
+        "hide": 0,
+        "includeAll": false,
+        "multi": false,
+        "skipUrlSync": true
+      },
+      {
+        "name": "namespace",
+        "label": "命名空间",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "kubernetes"
+        },
+        "query": {
+          "query": "label_values(kube_namespace_status_phase, namespace)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
+        },
+        "definition": "label_values(kube_namespace_status_phase, namespace)",
+        "current": {
+          "text": "All",
+          "value": "$__all",
+          "selected": true
+        },
+        "options": [],
+        "includeAll": true,
+        "allValue": ".+",
+        "multi": true,
+        "refresh": 1,
+        "sort": 1,
+        "hide": 0,
+        "skipUrlSync": false
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "title": "Kubernetes 集群概览",
+      "type": "text",
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 3
+      },
+      "options": {
+        "mode": "markdown",
+        "content": "**集群：${cluster}** · 仅使用独立的 Kubernetes 数据源。命名空间筛选作用于 Pod、Deployment 和 PVC；节点与抓取状态始终显示全群集。\n\n先检查抓取状态：**1 = 成功，0 = 失败；无数据不代表 0 或健康**。Waiting 空表也可能表示暂无等待容器，请结合抓取状态判断。PVC 不存在或存储驱动未提供卷统计时，容量/用量面板显示无数据。"
+      }
+    },
+    {
+      "id": 2,
+      "title": "节点 Ready",
+      "description": "来自 Kubernetes 节点 Ready condition。0 包含未就绪和未知状态；无数据时不能判定节点健康。",
+      "type": "stat",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "kubernetes"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 3,
+        "w": 6,
+        "h": 6
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "max by (node) (kube_node_status_condition{condition=\"Ready\",status=\"true\"})",
+          "legendFormat": "{{node}}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "kubernetes"
+          },
+          "range": false,
+          "instant": true,
+          "format": "time_series"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "min": 0,
+          "noValue": "无数据",
+          "color": {
+            "mode": "thresholds"
+          },
+          "max": 1,
+          "decimals": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          },
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "text": "未就绪 / 未知",
+                  "color": "red"
+                },
+                "1": {
+                  "text": "Ready",
+                  "color": "green"
+                }
+              }
+            }
+          ]
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "orientation": "auto",
+        "textMode": "value_and_name",
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto"
+      },
+      "interval": "30s",
+      "maxDataPoints": 600
+    },
+    {
+      "id": 3,
+      "title": "节点 CPU 使用率",
+      "description": "所有逻辑 CPU 的平均非 idle 比例，包含 iowait；不是 CPU 核数。至少需要两个抓取样本。",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "kubernetes"
+      },
+      "gridPos": {
+        "x": 6,
+        "y": 3,
+        "w": 9,
+        "h": 6
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "100 * (1 - avg by (instance) (rate(node_cpu_seconds_total{job=\"node-exporter\",mode=\"idle\"}[$__rate_interval])))",
+          "legendFormat": "{{instance}}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "kubernetes"
+          },
+          "range": true,
+          "instant": false,
+          "format": "time_series"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "noValue": "无数据",
+          "color": {
+            "mode": "palette-classic"
+          },
+          "max": 100,
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 8,
+            "spanNulls": false,
+            "showPoints": "never",
+            "axisLabel": "",
+            "axisCenteredZero": false
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "interval": "30s",
+      "maxDataPoints": 600
+    },
+    {
+      "id": 4,
+      "title": "节点内存使用率",
+      "description": "按 1 - MemAvailable / MemTotal 计算，反映可用内存余量；不把 Linux 可回收页缓存全部当作占用。",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "kubernetes"
+      },
+      "gridPos": {
+        "x": 15,
+        "y": 3,
+        "w": 9,
+        "h": 6
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "100 * (1 - max by (instance) (node_memory_MemAvailable_bytes{job=\"node-exporter\"}) / max by (instance) (node_memory_MemTotal_bytes{job=\"node-exporter\"}))",
+          "legendFormat": "{{instance}}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "kubernetes"
+          },
+          "range": true,
+          "instant": false,
+          "format": "time_series"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "noValue": "无数据",
+          "color": {
+            "mode": "palette-classic"
+          },
+          "max": 100,
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 8,
+            "spanNulls": false,
+            "showPoints": "never",
+            "axisLabel": "",
+            "axisCenteredZero": false
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "interval": "30s",
+      "maxDataPoints": 600
+    },
+    {
+      "id": 5,
+      "title": "节点文件系统使用率",
+      "description": "按普通进程可用空间计算；排除内存、容器 overlay、运行时及 Pod 挂载目录，保留主机持久文件系统。",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "kubernetes"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 9,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "100 * (1 - max by (instance, device, mountpoint) (node_filesystem_avail_bytes{job=\"node-exporter\",fstype!~\"tmpfs|devtmpfs|overlay|squashfs|nsfs|tracefs|proc|sysfs|cgroup2?|autofs\",mountpoint!~\"/run(/.*)?|.*/kubelet/pods/.*\"}) / max by (instance, device, mountpoint) (node_filesystem_size_bytes{job=\"node-exporter\",fstype!~\"tmpfs|devtmpfs|overlay|squashfs|nsfs|tracefs|proc|sysfs|cgroup2?|autofs\",mountpoint!~\"/run(/.*)?|.*/kubelet/pods/.*\"} > 0))",
+          "legendFormat": "{{instance}} {{mountpoint}} {{device}}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "kubernetes"
+          },
+          "range": true,
+          "instant": false,
+          "format": "time_series"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "noValue": "无数据",
+          "color": {
+            "mode": "palette-classic"
+          },
+          "max": 100,
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 8,
+            "spanNulls": false,
+            "showPoints": "never",
+            "axisLabel": "",
+            "axisCenteredZero": false
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "interval": "30s",
+      "maxDataPoints": 600
+    },
+    {
+      "id": 6,
+      "title": "Prometheus 抓取状态",
+      "description": "当前 Kubernetes Prometheus 的所有已发现目标。1=成功，0=失败；目标未被发现时不会出现一行 0，不能据此确认采集齐全。",
+      "type": "table",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "kubernetes"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 9,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "min by (job, instance, endpoint, metrics_path) (up)",
+          "legendFormat": "",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "kubernetes"
+          },
+          "range": false,
+          "instant": true,
+          "format": "table"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "min": 0,
+          "noValue": "无数据",
+          "color": {
+            "mode": "palette-classic"
+          },
+          "decimals": 0
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Value"
+            },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "0": {
+                        "text": "DOWN",
+                        "color": "red"
+                      },
+                      "1": {
+                        "text": "UP",
+                        "color": "green"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "sortBy": []
+      },
+      "interval": "30s",
+      "maxDataPoints": 600,
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "__name__": true
+            },
+            "indexByName": {},
+            "renameByName": {}
+          }
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "title": "Pod 阶段分布",
+      "description": "当前各 phase 的 Pod 数量。Running 仅表示阶段，不能替代容器就绪或业务健康检查。",
+      "type": "bargauge",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "kubernetes"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 17,
+        "w": 8,
+        "h": 7
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (phase) (max by (namespace, pod, phase) (kube_pod_status_phase{namespace=~\"${namespace:regex}\"}))",
+          "legendFormat": "{{phase}}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "kubernetes"
+          },
+          "range": false,
+          "instant": true,
+          "format": "time_series"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "min": 0,
+          "noValue": "无数据",
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "orientation": "horizontal",
+        "displayMode": "basic",
+        "showUnfilled": false,
+        "valueMode": "color"
+      },
+      "interval": "30s",
+      "maxDataPoints": 600
+    },
+    {
+      "id": 8,
+      "title": "容器 Waiting 原因 · 含 CrashLoopBackOff",
+      "description": "仅列出当前 Waiting=1 的容器及原因，例如 CrashLoopBackOff、ImagePullBackOff、ContainerCreating；空表不等于已证明健康。",
+      "type": "table",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "kubernetes"
+      },
+      "gridPos": {
+        "x": 8,
+        "y": 17,
+        "w": 16,
+        "h": 7
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "max by (namespace, pod, container, reason) (kube_pod_container_status_waiting_reason{namespace=~\"${namespace:regex}\"} == 1)",
+          "legendFormat": "",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "kubernetes"
+          },
+          "range": false,
+          "instant": true,
+          "format": "table"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "min": 0,
+          "noValue": "无数据",
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "sortBy": []
+      },
+      "interval": "30s",
+      "maxDataPoints": 600,
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "__name__": true
+            },
+            "indexByName": {},
+            "renameByName": {}
+          }
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "title": "Pod CPU · 每个采样点 Top 10",
+      "description": "汇总 Pod 内应用容器 CPU，单位为 CPU 核；排除空容器与基础设施 POD 容器。曲线不代表相对于 CPU limit 的百分比。",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "kubernetes"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 24,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "topk(10, sum by (namespace, pod) (max by (namespace, pod, container) (rate(container_cpu_usage_seconds_total{job=\"kubelet\",metrics_path=\"/metrics/cadvisor\",namespace=~\"${namespace:regex}\",pod!=\"\",container!=\"\",container!=\"POD\"}[$__rate_interval]))))",
+          "legendFormat": "{{namespace}} / {{pod}}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "kubernetes"
+          },
+          "range": true,
+          "instant": false,
+          "format": "time_series"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "min": 0,
+          "noValue": "无数据",
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 8,
+            "spanNulls": false,
+            "showPoints": "never",
+            "axisLabel": "CPU 核",
+            "axisCenteredZero": false
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "interval": "30s",
+      "maxDataPoints": 600
+    },
+    {
+      "id": 10,
+      "title": "Pod 内存工作集 · 每个采样点 Top 10",
+      "description": "汇总应用容器的 working set；并非内存 limit，也不能据此直接判定 OOM。",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "kubernetes"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 24,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "topk(10, sum by (namespace, pod) (max by (namespace, pod, container) (container_memory_working_set_bytes{job=\"kubelet\",metrics_path=\"/metrics/cadvisor\",namespace=~\"${namespace:regex}\",pod!=\"\",container!=\"\",container!=\"POD\"})))",
+          "legendFormat": "{{namespace}} / {{pod}}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "kubernetes"
+          },
+          "range": true,
+          "instant": false,
+          "format": "time_series"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "min": 0,
+          "noValue": "无数据",
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 8,
+            "spanNulls": false,
+            "showPoints": "never",
+            "axisLabel": "",
+            "axisCenteredZero": false
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "interval": "30s",
+      "maxDataPoints": 600
+    },
+    {
+      "id": 11,
+      "title": "Pod 最近 1 小时重启增量 · Top 10",
+      "description": "由容器 restart counter 的 increase 估算，可能出现小数；窗口固定为最近 1 小时。无数据与没有重启不同。",
+      "type": "bargauge",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "kubernetes"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 32,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "topk(10, sum by (namespace, pod) (max by (namespace, pod, container) (increase(kube_pod_container_status_restarts_total{namespace=~\"${namespace:regex}\"}[1h]))))",
+          "legendFormat": "{{namespace}} / {{pod}}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "kubernetes"
+          },
+          "range": false,
+          "instant": true,
+          "format": "time_series"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "min": 0,
+          "noValue": "无数据",
+          "color": {
+            "mode": "palette-classic"
+          },
+          "decimals": 1
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "orientation": "horizontal",
+        "displayMode": "basic",
+        "showUnfilled": false,
+        "valueMode": "color"
+      },
+      "interval": "30s",
+      "maxDataPoints": 600
+    },
+    {
+      "id": 12,
+      "title": "Pod 当前 phase",
+      "description": "每个 Pod 当前为 1 的 phase。容器 Waiting 原因见上方；CrashLoopBackOff 是容器等待原因，不是 Pod phase。",
+      "type": "table",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "kubernetes"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 32,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "max by (namespace, pod, phase) (kube_pod_status_phase{namespace=~\"${namespace:regex}\"} == 1)",
+          "legendFormat": "",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "kubernetes"
+          },
+          "range": false,
+          "instant": true,
+          "format": "table"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "min": 0,
+          "noValue": "无数据",
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "sortBy": []
+      },
+      "interval": "30s",
+      "maxDataPoints": 600,
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "__name__": true
+            },
+            "indexByName": {},
+            "renameByName": {}
+          }
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "title": "Deployment 期望 / 可用副本",
+      "description": "对比 spec.replicas 与 available replicas。单节点资源不足、滚动更新或探针失败都可能导致可用副本低于期望；不将缺失序列补为 0。",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "kubernetes"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 40,
+        "w": 24,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "max by (namespace, deployment) (kube_deployment_spec_replicas{namespace=~\"${namespace:regex}\"})",
+          "legendFormat": "{{namespace}} / {{deployment}} · 期望",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "kubernetes"
+          },
+          "range": true,
+          "instant": false,
+          "format": "time_series"
+        },
+        {
+          "refId": "B",
+          "expr": "max by (namespace, deployment) (kube_deployment_status_replicas_available{namespace=~\"${namespace:regex}\"})",
+          "legendFormat": "{{namespace}} / {{deployment}} · 可用",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "kubernetes"
+          },
+          "range": true,
+          "instant": false,
+          "format": "time_series"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "min": 0,
+          "noValue": "无数据",
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 8,
+            "spanNulls": false,
+            "showPoints": "never",
+            "axisLabel": "",
+            "axisCenteredZero": false
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "interval": "30s",
+      "maxDataPoints": 600
+    },
+    {
+      "id": 14,
+      "title": "PVC 请求 / 实际容量",
+      "description": "请求容量来自 kube-state-metrics；实际容量来自 kubelet 卷统计。没有 PVC 时为无数据；存在 PVC 但存储驱动不支持卷统计时，可能只有请求容量。",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "kubernetes"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 48,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "max by (namespace, persistentvolumeclaim) (kube_persistentvolumeclaim_resource_requests_storage_bytes{namespace=~\"${namespace:regex}\"})",
+          "legendFormat": "{{namespace}} / {{persistentvolumeclaim}} · 请求",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "kubernetes"
+          },
+          "range": true,
+          "instant": false,
+          "format": "time_series"
+        },
+        {
+          "refId": "B",
+          "expr": "max by (namespace, persistentvolumeclaim) (kubelet_volume_stats_capacity_bytes{job=\"kubelet\",namespace=~\"${namespace:regex}\"})",
+          "legendFormat": "{{namespace}} / {{persistentvolumeclaim}} · 实际",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "kubernetes"
+          },
+          "range": true,
+          "instant": false,
+          "format": "time_series"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "min": 0,
+          "noValue": "无数据",
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 8,
+            "spanNulls": false,
+            "showPoints": "never",
+            "axisLabel": "",
+            "axisCenteredZero": false
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "interval": "30s",
+      "maxDataPoints": 600
+    },
+    {
+      "id": 15,
+      "title": "PVC 实际空间使用率",
+      "description": "使用 kubelet used / capacity。PVC 未挂载、没有 PVC 或存储驱动不提供卷统计时为无数据，不表示 0%。",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "kubernetes"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 48,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "100 * max by (namespace, persistentvolumeclaim) (kubelet_volume_stats_used_bytes{job=\"kubelet\",namespace=~\"${namespace:regex}\"}) / max by (namespace, persistentvolumeclaim) (kubelet_volume_stats_capacity_bytes{job=\"kubelet\",namespace=~\"${namespace:regex}\"} > 0)",
+          "legendFormat": "{{namespace}} / {{persistentvolumeclaim}}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "kubernetes"
+          },
+          "range": true,
+          "instant": false,
+          "format": "time_series"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "noValue": "无数据",
+          "color": {
+            "mode": "palette-classic"
+          },
+          "max": 100,
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 8,
+            "spanNulls": false,
+            "showPoints": "never",
+            "axisLabel": "",
+            "axisCenteredZero": false
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "interval": "30s",
+      "maxDataPoints": 600
+    }
+  ]
+}

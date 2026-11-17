@@ -99,6 +99,21 @@ python3 -m ops.deploy rollback
 
 发布、自愈和整套启停共用操作锁，不要并行发起发布和服务重启。发布中断后的非 idle 状态需要人工协调；失败清理不会删除发布记录或监控卷。
 
+## 可选：Kubernetes 单节点监控
+
+项目增加独立的 K3s 单节点实验集群和 Kubernetes 监控，复用现有 Grafana。看板展示节点资源与 Ready 状态、Pod CPU/内存/重启、Deployment 副本、PVC 和采集目标状态。原有商品业务继续运行在 Compose；演示 Pod 的自动补建由 Kubernetes 控制器负责。
+
+在已部署真实运行环境的 Linux 主机、项目根目录执行：
+
+```bash
+sudo bash scripts/install_k3s.sh
+sudo bash scripts/install_k8s_monitoring.sh
+sudo bash scripts/install_k8s_grafana.sh
+sudo k3s kubectl apply -f monitoring/kubernetes/demo.yaml
+```
+
+Grafana 新增 `Kubernetes` 数据源和 `/d/sre-lab-kubernetes` 看板。安装版本、资源要求、验收步骤与限制见 [Kubernetes 监控说明](docs/kubernetes-monitoring.md)。
+
 ## 开发与测试
 
 应用开发使用 Python 3.12、uv；控制台测试另需 Node.js。宿主机 `ops` 使用 Python 3.9+ 标准库。

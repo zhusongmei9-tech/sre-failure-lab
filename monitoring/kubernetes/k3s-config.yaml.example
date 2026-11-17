@@ -1,0 +1,25 @@
+# K3s v1.37.2+k3s1; single-node lab alongside the Docker Compose stack.
+# install_k3s.sh creates /etc/rancher/k3s/config.yaml only when it is absent.
+node-name: sre-k8s-node
+write-kubeconfig-mode: "0600"
+data-dir: /var/lib/rancher/k3s
+cluster-cidr: 10.42.0.0/16
+service-cidr: 10.43.0.0/16
+disable:
+  - traefik
+  - servicelb
+flannel-backend: vxlan
+secrets-encryption: true
+kubelet-arg:
+  # Keep the host's existing swap; Pods retain Kubernetes' default NoSwap policy.
+  - fail-swap-on=false
+  - max-pods=60
+  - container-log-max-size=5Mi
+  - container-log-max-files=2
+  - image-gc-high-threshold=75
+  - image-gc-low-threshold=65
+  # Leave room for Docker Compose and the host. Do not reserve all two CPUs.
+  - system-reserved=cpu=200m,memory=768Mi
+  - kube-reserved=cpu=100m,memory=384Mi
+  - eviction-hard=memory.available<300Mi,nodefs.available<15%,nodefs.inodesFree<5%,imagefs.available<15%
+# The installer adds selinux: true when host SELinux is enabled, preserving it.

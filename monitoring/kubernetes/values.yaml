@@ -1,0 +1,180 @@
+# kube-prometheus-stack 93.3.1; Helm release sre-k8s, namespace sre-monitoring.
+# Small, single-node K3s lab alongside the existing Docker Compose services.
+fullnameOverride: sre-k8s
+
+grafana:
+  enabled: false
+alertmanager:
+  enabled: false
+windowsMonitoring:
+  enabled: false
+
+# K3s embeds these components; do not scrape nonexistent standalone endpoints.
+kubeControllerManager:
+  enabled: false
+kubeScheduler:
+  enabled: false
+kubeEtcd:
+  enabled: false
+kubeProxy:
+  enabled: false
+coreDns:
+  enabled: false
+kubeDns:
+  enabled: false
+
+defaultRules:
+  create: true
+  rules:
+    alertmanager: false
+    etcd: false
+    kubeControllerManager: false
+    kubeSchedulerAlerting: false
+    kubeSchedulerRecording: false
+    kubeProxy: false
+    windows: false
+    # Keep basic API-server monitoring; omit large HA/SLO recording-rule sets.
+    kubeApiserverBurnrate: false
+    kubeApiserverHistogram: false
+    kubeApiserverSlos: false
+  disabled:
+    # No notification receiver in this stage; keep ordinary TargetDown alerts.
+    Watchdog: true
+    InfoInhibitor: true
+    PrometheusNotConnectedToAlertmanagers: true
+    PrometheusErrorSendingAlertsToSomeAlertmanagers: true
+    PrometheusErrorSendingAlertsToAnyAlertmanager: true
+
+kubeApiServer:
+  enabled: true
+kubelet:
+  enabled: true
+  serviceMonitor:
+    kubelet: true
+    cAdvisor: true
+    probes: false
+    resource: false
+    interval: 30s
+
+kubeStateMetrics:
+  enabled: true
+kube-state-metrics:
+  replicas: 1
+  resources:
+    requests:
+      cpu: 25m
+      memory: 48Mi
+    limits:
+      cpu: 100m
+      memory: 128Mi
+  # The subchart generates read-only RBAC for these collectors. No secret data.
+  collectors:
+    - cronjobs
+    - daemonsets
+    - deployments
+    - horizontalpodautoscalers
+    - jobs
+    - limitranges
+    - namespaces
+    - nodes
+    - persistentvolumeclaims
+    - persistentvolumes
+    - pods
+    - replicasets
+    - replicationcontrollers
+    - resourcequotas
+    - services
+    - statefulsets
+
+nodeExporter:
+  enabled: true
+  operatingSystems:
+    linux:
+      enabled: true
+    aix:
+      enabled: false
+    darwin:
+      enabled: false
+prometheus-node-exporter:
+  service:
+    # Changes listener, Service and probe ports together; do not use host 9100.
+    port: 19100
+    targetPort: 19100
+  resources:
+    requests:
+      cpu: 10m
+      memory: 32Mi
+    limits:
+      cpu: 100m
+      memory: 96Mi
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    capabilities:
+      drop: [ALL]
+
+prometheusOperator:
+  # Chart-managed RBAC; only monitor CRs in this release namespace.
+  namespaces:
+    releaseNamespace: true
+  admissionWebhooks:
+    enabled: false
+  tls:
+    enabled: false
+  resources:
+    requests:
+      cpu: 25m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 192Mi
+  prometheusConfigReloader:
+    resources:
+      requests:
+        cpu: 10m
+        memory: 32Mi
+      limits:
+        cpu: 100m
+        memory: 64Mi
+
+prometheus:
+  service:
+    type: ClusterIP
+  ingress:
+    enabled: false
+  prometheusSpec:
+    replicas: 1
+    shards: 1
+    scrapeInterval: 30s
+    evaluationInterval: 30s
+    scrapeTimeout: 10s
+    retention: 1d
+    retentionSize: 256MB
+    walCompression: true
+    externalLabels:
+      cluster: sre-lab-k3s
+    # Keep the default release selector, and discover monitors/rules only here.
+    serviceMonitorNamespaceSelector:
+      matchLabels:
+        kubernetes.io/metadata.name: sre-monitoring
+    podMonitorNamespaceSelector:
+      matchLabels:
+        kubernetes.io/metadata.name: sre-monitoring
+    ruleNamespaceSelector:
+      matchLabels:
+        kubernetes.io/metadata.name: sre-monitoring
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: local-path
+          accessModes: [ReadWriteOnce]
+          resources:
+            requests:
+              storage: 1Gi
