@@ -2,9 +2,9 @@
 
 一个面向 SRE 学习与实践的单机实验项目：以 FastAPI 商品查询和 Redis 缓存为业务，练习故障注入、资源观测、真实自愈、蓝绿发布和回滚。提供 Docker Compose 教学环境，以及由 Linux systemd 统一管理的真实运行环境。
 
-**已发布 v0.4.0 源码下载：[sre-faliure-lab-v0.4.0.tar.gz](https://github.com/zhusongmei9-tech/sre-failure-lab/releases/download/v0.4.0/sre-faliure-lab-v0.4.0.tar.gz)**。本版本增加 K3s 单节点监控，复用已有 Grafana；源码包不含 Docker 镜像或开发依赖，安装需要联网。Kubernetes 安装脚本支持 Linux ARM64 与 AMD64，本轮仅在 ARM64 实机完成验收。
+**v0.5.0 源码下载：[sre-faliure-lab-v0.5.0.tar.gz](https://github.com/zhusongmei9-tech/sre-failure-lab/releases/download/v0.5.0/sre-faliure-lab-v0.5.0.tar.gz)**。本版用一个源码包交付原有实验室、K3s 单节点监控，以及安装准备、可选告警和受控演示流程；不含 Docker 镜像或开发依赖，安装需要联网。
 
-当前 `main` 还增加了面向“尚无集群”的准备流程：主机预检、重启前后验收、可选告警接收与受控演示。先从 [无集群准备与验收路线](docs/kubernetes-readiness.md) 开始；这些新增内容尚未包含在上面的 v0.4.0 下载包中，现场运行结果仍待验证。
+本版已包含面向“尚无集群”的主机预检、重启前后验收、告警闭环与可重复演示。先从 [无集群准备与验收路线](docs/kubernetes-readiness.md) 开始。新增功能通过本地与配置检查，**尚无集群实测**；历史 ARM64 现场结果属于 v0.4.0 阶段，不能替代本版新增功能的验收。安装脚本支持 Linux ARM64 与 AMD64，AMD64 实机结果仍待验证。
 
 ## 能做什么
 
@@ -65,7 +65,7 @@ curl -i http://127.0.0.1:8000/products/1
 
 需要使用 systemd 的 Linux、Docker Engine/Compose、宿主机 Python 3.9+ 和管理员权限。将源码放到新的 `/opt/sre-failure-lab`，在 root 会话中首次初始化；已有部署不要重新 init：
 
-下文 `0.3.0`、`0.3.1` 是保留的业务镜像演练版本，与项目源码发布版本 `v0.4.0` 独立；项目版本升级不会自动替换已部署镜像。
+下文 `0.3.0`、`0.3.1` 是保留的业务镜像演练版本，与项目源码发布版本 `v0.5.0` 独立；项目版本升级不会自动替换已部署镜像。
 
 ```bash
 cd /opt/sre-failure-lab
@@ -119,7 +119,7 @@ sudo bash scripts/install_k8s_grafana.sh
 sudo k3s kubectl apply -f monitoring/kubernetes/demo.yaml
 ```
 
-Grafana 新增 `Kubernetes` 数据源和 `/d/sre-lab-kubernetes` 看板。安装版本、资源要求、验收步骤与限制见 [Kubernetes 监控说明](docs/kubernetes-monitoring.md)。ARM64 实机已验证 8 个采集目标 UP、48 次看板查询成功，以及演示 Pod 删除后新 UID 恢复 Ready；详见 [Kubernetes 验收记录](docs/kubernetes-validation-137.md)。这不代表 AMD64、整机重启或跨节点接管已经验收。
+Grafana 新增 `Kubernetes` 数据源和 `/d/sre-lab-kubernetes` 看板。安装版本、资源要求、验收步骤与限制见 [Kubernetes 监控说明](docs/kubernetes-monitoring.md)。v0.4.0 阶段的 ARM64 实机已验证 8 个采集目标 UP、48 次看板查询成功，以及演示 Pod 删除后新 UID 恢复 Ready；详见 [历史 Kubernetes 验收记录](docs/kubernetes-validation-137.md)。这不代表本版新增流程、AMD64、整机重启或跨节点接管已经验收。
 
 安装前检查、告警闭环与受控演示见 [后续验收路线](docs/kubernetes-readiness.md)。当前没有可用集群也可以执行计划模式、单元测试和 Helm/Prometheus 配置检查；历史实机报告不表示本轮新增功能已经在现场通过。
 
@@ -153,7 +153,7 @@ Linux 实机已完成 Redis/API 停止后的真实自愈、正常发布、手动
 
 ## 历史离线安装包
 
-此前为 Compose 实验室制作的约 **706 MB** Linux ARM64 离线包保留在本地，包含当时的源码、统一服务配置和八个 Docker 镜像，不包含本次 Kubernetes 交付。它不在 Git 仓库或本次 v0.4.0 Release 中；本版本下载入口为页首的联网安装源码包。历史说明见 [离线包使用说明](离线包使用说明.md) 和 [离线交付校验](docs/offline-package-validation.md)。
+此前为 Compose 实验室制作的约 **706 MB** Linux ARM64 离线包保留在本地，包含当时的源码、统一服务配置和八个 Docker 镜像，不包含本次 Kubernetes 交付。它不在 Git 仓库或本次 v0.5.0 Release 中；本版本下载入口为页首的联网安装源码包。历史说明见 [离线包使用说明](离线包使用说明.md) 和 [离线交付校验](docs/offline-package-validation.md)。
 
 ## 进一步阅读
 
