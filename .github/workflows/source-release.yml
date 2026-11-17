@@ -10,7 +10,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: source-release-v0.3.0
+  group: source-release-v0.4.0
   cancel-in-progress: false
 
 jobs:
@@ -22,13 +22,13 @@ jobs:
       contents: write
       actions: read
     env:
-      SOURCE_SHA: 475db11aab8e77806a8c7450e1eb36285634b0ed
-      RELEASE_TAG: v0.3.0
-      ASSET_NAME: sre-faliure-lab-v0.3.0.tar.gz
+      SOURCE_SHA: 566ae2c8dd826a39e07a9e0227035b684c08055d
+      RELEASE_TAG: v0.4.0
+      ASSET_NAME: sre-faliure-lab-v0.4.0.tar.gz
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: 475db11aab8e77806a8c7450e1eb36285634b0ed
+          ref: 566ae2c8dd826a39e07a9e0227035b684c08055d
           fetch-depth: 0
           persist-credentials: false
       - name: Build the source archive from the verified commit
@@ -37,10 +37,21 @@ jobs:
           set -euo pipefail
           test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
           python3 - <<'PY'
-          import os, tomllib
+          import os, subprocess, tomllib
           from pathlib import Path
           version = tomllib.loads(Path('pyproject.toml').read_text())['project']['version']
           assert 'v' + version == os.environ['RELEASE_TAG'], 'Source version mismatch'
+          paths = subprocess.check_output(['git', 'ls-files', '-z']).decode().split('\0')
+          for path in filter(None, paths):
+              parts = Path(path).parts
+              assert parts[0] not in {'private', 'runtime', 'reports', 'dist', '.venv'}, path
+              assert not path.endswith(('.kubeconfig', '.pem', '.key', '.local.yml')), path
+              assert not (Path(path).name.startswith('.env') and Path(path).name != '.env.example'), path
+          for path in ['scripts/install_k3s.sh', 'scripts/install_k8s_monitoring.sh',
+                       'scripts/install_k8s_grafana.sh', 'scripts/accept_k8s.py',
+                       'monitoring/grafana/dashboards/kubernetes.json',
+                       'docs/kubernetes-monitoring.md', 'docs/kubernetes-validation-137.md']:
+              assert path in paths, f'Missing Kubernetes source: {path}'
           PY
           mkdir -p dist/source-release
           prefix="sre-failure-lab-${RELEASE_TAG}"
@@ -68,16 +79,8 @@ jobs:
           marker = f'<!-- source-release: {source} -->'
           folder = Path('dist/source-release')
           name = os.environ['ASSET_NAME']
-          legacy_name = 'sre-failure-lab-source-latest.tar.gz'
           archive = (folder / name).read_bytes()
           digest = hashlib.sha256(archive).hexdigest()
-          # Only these already verified attachments may be removed in this migration.
-          obsolete = {
-              'sre-failure-lab-source-latest.zip':
-                  (754923698, 411800, '3782a3b7e05e5f1a35367a5cac46d5d7a609375ff09d2594ae9cbed7579d397d'),
-              'sre-failure-lab-source-latest.sha256':
-                  (754948349, 203, 'd19bae915653cdd01c58f3f45c5eb7f551e919e6314399abc0affba1a8afe4b5'),
-          }
 
           def gh(*args):
               return subprocess.run(['gh', *args], check=True, capture_output=True).stdout
@@ -117,7 +120,8 @@ jobs:
               return api(f'{base}/releases/{matches[0]["id"]}') if matches else None
 
           runs = api(f'{base}/actions/runs?head_sha={source}&per_page=100')['workflow_runs']
-          checks = [run for run in runs if run['name'] == 'Python checks' and run['event'] == 'push']
+          checks = [run for run in runs if run['path'] == '.github/workflows/checks.yml'
+                    and run['event'] == 'push' and run['head_branch'] == 'main']
           if not checks or max(checks, key=lambda run: run['id'])['conclusion'] != 'success':
               raise RuntimeError('The source commit must have a successful Python checks run')
 
@@ -130,102 +134,75 @@ jobs:
           verify_tag()
 
           notes = f'''{marker}
-          SRE 故障演练实验室 {tag} 源码包。
+          SRE 故障演练实验室 {tag}：新增 Kubernetes 单节点监控。
 
           **下载源码：[{name}](https://github.com/{repo}/releases/download/{tag}/{name})**
 
-          包含 FastAPI 商品查询、Redis 缓存、故障演练、真实自愈控制器、资源监控、蓝绿发布与回滚、systemd 统一管理，以及测试和使用文档。
+          保留 FastAPI 商品查询、Redis 缓存、故障演练、真实自愈、资源监控、蓝绿发布与回滚、systemd 管理。
 
-          - 源码提交：`{source}`。
-          - 只需下载上面的一个 tar.gz 附件。解压：`tar -xzf {name}`。
-          - 这是源码包，不含 Docker 镜像、私有配置或运行数据；首次部署需要构建/拉取镜像，步骤见包内 README.md。
-          - 该提交的 GitHub Actions 代码检查已通过。本地完整测试记录为 244 passed、0 skipped（含真实 Redis）；普通 CI 未配置真实 Redis 时会跳过对应测试。
-          - 实机自愈、发布、回滚和 systemd 验证记录见 docs；重启虚拟机恢复及全新机器离线安装尚未实测。
+          本版新增：
+          - K3s 单节点安装脚本与固定版本校验，独立运行于原有 Compose 业务旁。
+          - Prometheus Operator、kube-state-metrics、node_exporter 与受限资源配置。
+          - 复用 Grafana 的 Kubernetes 看板：节点 CPU/内存/磁盘、Pod 资源/重启、Deployment 副本、PVC 和采集状态。
+          - 自动验收脚本及演示 Pod 删除后自动补建；systemd 管理监控桥接服务。
+          - 安装、停机和排障步骤见包内 docs/kubernetes-monitoring.md；实测记录见 docs/kubernetes-validation-137.md。
+
+          验证与边界：
+          - 源码提交：`{source}`；该提交 GitHub Actions 代码检查已通过。
+          - 137 ARM64 实测：8 个采集目标全 UP、48 次看板查询通过；一次演示 Pod 删除后 5.88 秒重新 Ready。这是单次实验观测，不是恢复时间承诺。
+          - 安装脚本支持 Linux AMD64/ARM64，现场仅验证 ARM64；尚未实测 AMD64 安装、整机重启恢复或全新机器离线安装。
+          - 原有业务仍运行在 Docker Compose；单节点集群不提供跨主机高可用，尚未配置外部告警通知。
+          - 这是源码包，不含 Docker/K3s 镜像、凭据或运行数据；首次安装需联网拉取依赖与镜像。
+
+          只需下载上面的一个附件。解压：`tar -xzf {name}`。
 
           SHA-256：`{digest}`
 
-          运行 `sha256sum {name}`，与上面的摘要比较即可，无需另下校验文件。
+          运行 `sha256sum {name}` 与摘要比较，无需另下校验文件。
           '''
           if release is None:
-              # Use the returned ID: a newly created draft may not appear in the list immediately.
+              # Keep the returned ID; a new draft may not appear in the list immediately.
               release = api(f'{base}/releases', '--method', 'POST',
                             '-f', f'tag_name={tag}', '-f', f'target_commitish={source}',
-                            '-f', f'name={tag} · SRE 故障演练实验室源码',
+                            '-f', f'name={tag} · Kubernetes 监控版',
                             '-f', f'body={notes}', '-F', 'draft=true', '-F', 'prerelease=false')
 
           def assets_for(release_id):
               assets = api(f'{base}/releases/{release_id}/assets?per_page=100')
-              if len({asset['name'] for asset in assets}) != len(assets):
-                  raise RuntimeError('Duplicate release asset names')
-              if set(asset['name'] for asset in assets) - {name, legacy_name, *obsolete}:
-                  raise RuntimeError('Unexpected release assets; refusing to change release')
-              return {asset['name']: asset for asset in assets}
+              if len(assets) > 1 or any(asset['name'] != name for asset in assets):
+                  raise RuntimeError('Unexpected assets; refusing to change release')
+              return assets
 
           def verify_asset(asset):
-              asset_name = asset['name']
-              if asset_name in obsolete:
-                  expected_id, expected_size, expected_digest = obsolete[asset_name]
-                  if asset['id'] != expected_id:
-                      raise RuntimeError(f'Unexpected obsolete asset ID: {asset_name}')
-              else:
-                  expected_size, expected_digest = len(archive), digest
-                  if release['id'] == 447062103 and asset['id'] != 754923740:
-                      raise RuntimeError('Source archive asset ID changed')
-              if asset['state'] != 'uploaded' or asset['size'] != expected_size:
-                  raise RuntimeError(f'Incomplete or conflicting asset: {asset_name}')
+              if asset['name'] != name or asset['state'] != 'uploaded' or asset['size'] != len(archive):
+                  raise RuntimeError('Incomplete or conflicting source archive')
               data = gh('api', f'{base}/releases/assets/{asset["id"]}',
                         '-H', 'Accept: application/octet-stream')
-              if hashlib.sha256(data).hexdigest() != expected_digest:
-                  raise RuntimeError(f'Checksum mismatch: {asset_name}')
+              if hashlib.sha256(data).hexdigest() != digest:
+                  raise RuntimeError('Source archive checksum mismatch')
 
           assets = assets_for(release['id'])
-          # Verify every existing attachment before renaming or removing anything.
-          for asset in assets.values():
-              verify_asset(asset)
-          if name in assets and legacy_name in assets:
-              raise RuntimeError('Both legacy and requested source archive names exist')
-          if name not in assets and legacy_name not in assets and not release['draft']:
-              raise RuntimeError('Published source archive is missing')
-          if release.get('immutable') and set(assets) != {name}:
-              raise RuntimeError('Cannot rename assets on an immutable release')
-
-          if name not in assets:
-              if legacy_name in assets:
-                  assets[name] = api(f'{base}/releases/assets/{assets[legacy_name]["id"]}',
-                                     '--method', 'PATCH', '-f', f'name={name}')
-              elif release['draft']:
-                  assets[name] = json.loads(gh(
-                      'api', f'https://uploads.github.com/{base}/releases/{release["id"]}/assets?name={name}',
-                      '--method', 'POST', '-H', 'Content-Type: application/octet-stream',
-                      '--input', str(folder / name)))
-
-          current = api(f'{base}/releases/assets/{assets[name]["id"]}')
-          if current['name'] != name:
-              raise RuntimeError('Source archive rename did not take effect')
-          verify_asset(current)
-          if (release.get('body') or '') != notes:
-              api(f'{base}/releases/{release["id"]}', '--method', 'PATCH',
-                  '-f', f'body={notes}')
-          for old in obsolete:
-              if old in assets:
-                  # Preserve the verified tar archive; remove only the two authorized duplicates.
-                  redundant = api(f'{base}/releases/assets/{assets[old]["id"]}')
-                  if redundant['name'] != old:
-                      raise RuntimeError('Obsolete asset changed during migration')
-                  verify_asset(redundant)
-                  gh('api', f'{base}/releases/assets/{redundant["id"]}', '--method', 'DELETE')
+          if not assets:
+              if not release['draft']:
+                  raise RuntimeError('Published source archive is missing')
+              gh('api', f'https://uploads.github.com/{base}/releases/{release["id"]}/assets?name={name}',
+                 '--method', 'POST', '-H', 'Content-Type: application/octet-stream',
+                 '--input', str(folder / name))
           assets = assets_for(release['id'])
-          if set(assets) != {name}:
-              raise RuntimeError('Final release asset set mismatch')
-          verify_asset(assets[name])
+          if len(assets) != 1:
+              raise RuntimeError('The release must contain exactly one source asset')
+          verify_asset(assets[0])
           verify_tag()
           if release['draft']:
               api(f'{base}/releases/{release["id"]}', '--method', 'PATCH',
-                  '-F', 'draft=false', '-f', 'make_latest=true')
+                  '-f', f'body={notes}', '-F', 'draft=false', '-f', 'make_latest=true')
           published = api(f'{base}/releases/{release["id"]}')
           if published['draft'] or published['prerelease']:
               raise RuntimeError('Release was not published as a stable version')
+          if (published.get('body') or '') != notes:
+              raise RuntimeError('Published release notes differ; refusing to overwrite')
           verify_tag()
+          verify_asset(assets_for(release['id'])[0])
           print(published['html_url'])
           with open(os.environ['GITHUB_STEP_SUMMARY'], 'a', encoding='utf-8') as summary:
               summary.write(f'Source release: {published["html_url"]}\n\nCommit: `{source}`\n\n')
