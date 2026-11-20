@@ -1,227 +1,41 @@
 name: Publish source release
 
 on:
-  push:
+  workflow_run:
+    workflows: ["Python checks"]
     branches: [main]
-    paths: [.github/workflows/source-release.yml]
+    types: [completed]
   workflow_dispatch:
 
-permissions:
-  contents: read
-
-concurrency:
-  group: source-release-v0.6.0
-  cancel-in-progress: false
-
+permissions: {}
 jobs:
   release:
-    if: github.repository == 'zhusongmei9-tech/sre-failure-lab' && github.ref == 'refs/heads/main'
+    if: >-
+      github.repository == 'zhusongmei9-tech/sre-failure-lab' &&
+      github.ref == 'refs/heads/main' &&
+      (github.event_name == 'workflow_dispatch' ||
+       (github.event.workflow_run.event == 'push' &&
+        github.event.workflow_run.path == '.github/workflows/checks.yml' &&
+        github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.head_repository.full_name == github.repository))
+    concurrency:
+      group: source-release-v0.6.0
+      # Keep superseded runs from replacing a newer head in the pending queue.
+      queue: max
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
       contents: write
       actions: read
     env:
-      # Pin the verified main source commit for this release.
-      SOURCE_SHA: b6c416a2cb3cee62c4bfa35c7e813f1bf9995113
-      RELEASE_TAG: v0.6.0
-      ASSET_NAME: sre-faliure-lab-v0.6.0.tar.gz
+      SOURCE_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: b6c416a2cb3cee62c4bfa35c7e813f1bf9995113
+          ref: ${{ env.SOURCE_SHA }}
           fetch-depth: 0
           persist-credentials: false
-      - name: Build the source archive from the verified commit
-        shell: bash
-        run: |
-          set -euo pipefail
-          test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
-          python3 - <<'PY'
-          import os, subprocess, tomllib
-          from pathlib import Path
-          version = tomllib.loads(Path('pyproject.toml').read_text())['project']['version']
-          assert 'v' + version == os.environ['RELEASE_TAG'], 'Source version mismatch'
-          packages = tomllib.loads(Path('uv.lock').read_text())['package']
-          assert next(p['version'] for p in packages if p['name'] == 'sre-failure-lab') == version
-          paths = subprocess.check_output(['git', 'ls-files', '-z']).decode().split('\0')
-          for path in filter(None, paths):
-              parts = Path(path).parts
-              assert parts[0] not in {'private', 'runtime', 'reports', 'dist', '.venv'}, path
-              assert not path.endswith(('.kubeconfig', '.pem', '.key', '.local.yml')), path
-              assert not (Path(path).name.startswith('.env') and Path(path).name != '.env.example'), path
-          for path in ['scripts/install_k3s.sh', 'scripts/install_k8s_monitoring.sh',
-                       'scripts/install_k8s_grafana.sh', 'scripts/accept_k8s.py',
-                       'monitoring/grafana/dashboards/kubernetes.json',
-                       'docs/kubernetes-monitoring.md', 'docs/kubernetes-validation-137.md',
-                       'scripts/check_k8s_host.py', 'scripts/accept_k8s_reboot.py',
-                       'scripts/accept_k8s_alerts.py', 'scripts/demo_k8s.py',
-                       'scripts/validate_k8s.py', 'monitoring/kubernetes/alerting/receiver.py',
-                       'monitoring/kubernetes/alerting/receiver.yaml',
-                       'monitoring/kubernetes/alerting/values.yaml',
-                       'monitoring/kubernetes/alerting/rules.json',
-                       'monitoring/kubernetes/alerting/rules.test.yml',
-                       'monitoring/kubernetes/alerting/synthetic.rules.json',
-                       'monitoring/kubernetes/alerting/render_rules.py',
-                       'docs/kubernetes-readiness.md', 'docs/kubernetes-readiness-validation.md',
-                       'docs/kubernetes-installation-acceptance.md',
-                       'docs/kubernetes-alerting.md', 'docs/kubernetes-demo.md',
-                       '.github/workflows/checks.yml', 'monitoring/kubernetes/demo.yaml',
-                       'tests/test_k8s_host.py', 'tests/test_k8s_reboot.py',
-                       'tests/test_k8s_demo.py', 'tests/test_k8s_alert_receiver.py',
-                       'tests/test_k8s_readonly.py',
-                       'ansible/bootstrap.yml', 'ansible/deploy.yml', 'ansible/inventory.example.ini',
-                       'scripts/install_systemd.sh', 'tests/test_systemd_install.py',
-                       'scripts/check_demo_identity.py', 'scripts/check_demo_service.sh',
-                       'scripts/drill_demo_service.sh', 'monitoring/kubernetes/service-smoke.yaml',
-                       'tests/test_k8s_service_smoke.py', 'gitops/render_demo.py',
-                       'gitops/application.yaml.in', 'docs/ansible-deploy.md',
-                       'docs/k8s-service-smoke.md', 'docs/ansible-k8s-validation-137.md',
-                       'docs/k8s-gitops.md']:
-              assert path in paths, f'Missing release source: {path}'
-          PY
-          mkdir -p dist/source-release
-          prefix="sre-failure-lab-${RELEASE_TAG}"
-          git archive --format=tar --prefix="${prefix}/" "$SOURCE_SHA" | gzip -n > "dist/source-release/${ASSET_NAME}"
-          cd dist/source-release
-          tar -tzf "$ASSET_NAME" > /dev/null
-          sha256sum "$ASSET_NAME"
-      - name: Upload, verify and publish
+      - name: Verify CI, package the source and update the existing attachment
         env:
           GH_TOKEN: ${{ github.token }}
-          GH_REPO: ${{ github.repository }}
-        shell: bash
-        run: |
-          python3 - <<'PY'
-          import hashlib
-          import json
-          import os
-          import subprocess
-          from pathlib import Path
-
-          repo = os.environ['GH_REPO']
-          source = os.environ['SOURCE_SHA']
-          tag = os.environ['RELEASE_TAG']
-          base = f'repos/{repo}'
-          marker = f'<!-- source-release: {source} -->'
-          folder = Path('dist/source-release')
-          name = os.environ['ASSET_NAME']
-          archive = (folder / name).read_bytes()
-          digest = hashlib.sha256(archive).hexdigest()
-
-          def gh(*args):
-              return subprocess.run(['gh', *args], check=True, capture_output=True).stdout
-
-          def api(path, *args, missing_ok=False):
-              result = subprocess.run(['gh', 'api', path, *args], capture_output=True)
-              if result.returncode:
-                  if missing_ok and '(HTTP 404)' in result.stderr.decode():
-                      return None
-                  raise RuntimeError(result.stderr.decode())
-              return json.loads(result.stdout)
-
-          def verify_tag(required=True):
-              ref = api(f'{base}/git/ref/tags/{tag}', missing_ok=not required)
-              if ref is None:
-                  return False
-              obj = ref['object']
-              for _ in range(10):
-                  if obj['type'] != 'tag':
-                      break
-                  obj = api(f'{base}/git/tags/{obj["sha"]}')['object']
-              if obj['type'] != 'commit' or obj['sha'] != source:
-                  raise RuntimeError('Existing tag points to a different source commit')
-              return True
-
-          def find_release():
-              matches = []
-              page = 1
-              while True:
-                  batch = api(f'{base}/releases?per_page=100&page={page}')
-                  matches.extend(item for item in batch if item['tag_name'] == tag)
-                  if len(batch) < 100:
-                      break
-                  page += 1
-              if len(matches) > 1:
-                  raise RuntimeError('Multiple releases use this tag')
-              return api(f'{base}/releases/{matches[0]["id"]}') if matches else None
-
-          runs = api(f'{base}/actions/runs?head_sha={source}&per_page=100')['workflow_runs']
-          checks = [run for run in runs if run['path'] == '.github/workflows/checks.yml'
-                    and run['event'] == 'push' and run['head_branch'] == 'main']
-          if not checks or max(checks, key=lambda run: run['id'])['conclusion'] != 'success':
-              raise RuntimeError('The source commit must have a successful Python checks run')
-
-          release = find_release()
-          if release and marker not in (release.get('body') or ''):
-              raise RuntimeError('Existing release is not owned by this source publication')
-          if not verify_tag(required=bool(release and not release['draft'])):
-              api(f'{base}/git/refs', '--method', 'POST', '-f', f'ref=refs/tags/{tag}',
-                  '-f', f'sha={source}')
-          verify_tag()
-
-          notes = f'''{marker}
-          SRE 故障演练实验室 {tag} 提供 Ansible 重复部署和 Kubernetes Service 故障演练。
-
-          [下载 {name}](https://github.com/{repo}/releases/download/{tag}/{name})
-
-          - Ansible 可预览和应用 systemd 配置，并检查 Redis 就绪状态和商品查询。ARM64 实机连续执行两次，第二次 `changed=0 failed=0`，主服务和自愈服务都保持了各自原有的启动时间。
-          - 新增集群内 DNS、HTTP 和正文探针。Service 选择器演练复现了 Pod Ready、DNS 成功但 HTTP 失败的情况。脚本恢复选择器，从注入到确认 HTTP 200 和正文正确共用 14 秒。
-          - 包含 Argo CD 配置和基于 Git 的回滚演练手册。本次仅交付配置，Argo CD 实机演练留待后续。
-
-          [Ansible 部署手册](https://github.com/{repo}/blob/{tag}/docs/ansible-deploy.md) · [探针与演练](https://github.com/{repo}/blob/{tag}/docs/k8s-service-smoke.md) · [实机验收记录](https://github.com/{repo}/blob/{tag}/docs/ansible-k8s-validation-137.md)
-
-          源码提交 `{source}` 已通过 GitHub Actions 检查。本地 383 项 Python 测试（含真实 Redis）与 4 项前端测试均通过。本轮在已有 ARM64 实例上验收，全新虚机安装与 K3s 无人干预开机恢复仍待验证。
-
-          下载一个源码包后运行 `tar -xzf {name}` 解压。首次部署需要联网获取依赖和镜像。
-
-          SHA-256 为 `{digest}`。运行 `sha256sum {name}` 即可核对。
-          '''
-          if release is None:
-              # Keep the returned ID; a new draft may not appear in the list immediately.
-              release = api(f'{base}/releases', '--method', 'POST',
-                            '-f', f'tag_name={tag}', '-f', f'target_commitish={source}',
-                            '-f', f'name={tag} · Ansible 部署与 Kubernetes Service 演练',
-                            '-f', f'body={notes}', '-F', 'draft=true', '-F', 'prerelease=false')
-
-          def assets_for(release_id):
-              assets = api(f'{base}/releases/{release_id}/assets?per_page=100')
-              if len(assets) > 1 or any(asset['name'] != name for asset in assets):
-                  raise RuntimeError('Unexpected assets; refusing to change release')
-              return assets
-
-          def verify_asset(asset):
-              if asset['name'] != name or asset['state'] != 'uploaded' or asset['size'] != len(archive):
-                  raise RuntimeError('Incomplete or conflicting source archive')
-              data = gh('api', f'{base}/releases/assets/{asset["id"]}',
-                        '-H', 'Accept: application/octet-stream')
-              if hashlib.sha256(data).hexdigest() != digest:
-                  raise RuntimeError('Source archive checksum mismatch')
-
-          assets = assets_for(release['id'])
-          if not assets:
-              if not release['draft']:
-                  raise RuntimeError('Published source archive is missing')
-              gh('api', f'https://uploads.github.com/{base}/releases/{release["id"]}/assets?name={name}',
-                 '--method', 'POST', '-H', 'Content-Type: application/octet-stream',
-                 '--input', str(folder / name))
-          assets = assets_for(release['id'])
-          if len(assets) != 1:
-              raise RuntimeError('The release must contain exactly one source asset')
-          verify_asset(assets[0])
-          verify_tag()
-          if release['draft']:
-              api(f'{base}/releases/{release["id"]}', '--method', 'PATCH',
-                  '-f', f'body={notes}', '-F', 'draft=false', '-f', 'make_latest=true')
-          published = api(f'{base}/releases/{release["id"]}')
-          if published['draft'] or published['prerelease']:
-              raise RuntimeError('Release was not published as a stable version')
-          if (published.get('body') or '') != notes:
-              raise RuntimeError('Published release notes differ; refusing to overwrite')
-          verify_tag()
-          verify_asset(assets_for(release['id'])[0])
-          print(published['html_url'])
-          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a', encoding='utf-8') as summary:
-              summary.write(f'Source release: {published["html_url"]}\n\nCommit: `{source}`\n\n')
-              summary.write(f'One source archive: `{name}`\n\nSHA-256: `{digest}`\n')
-          PY
+        run: python3 scripts/publish_source_release.py

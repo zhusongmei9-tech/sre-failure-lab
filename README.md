@@ -2,9 +2,11 @@
 
 一个面向 SRE 学习与实践的单机实验项目：以 FastAPI 商品查询和 Redis 缓存为业务，练习故障注入、资源观测、真实自愈、蓝绿发布和回滚。提供 Docker Compose 教学环境，以及由 Linux systemd 统一管理的真实运行环境。
 
-`main` 分支包含可独立部署的 Kubernetes 商品实验环境。在持续商品查询下，可复现滚动发布、失败回滚及 HPA 自动扩缩容，并用 Grafana 查看流量和副本变化。[部署与实机验收](docs/k8s-product-lab.md) · [下载 main 源码（tar.gz）](https://github.com/zhusongmei9-tech/sre-failure-lab/archive/refs/heads/main.tar.gz)
+`main` 分支包含可独立部署的 Kubernetes 商品实验环境。在持续商品查询下，可复现滚动发布、失败回滚及 HPA 自动扩缩容，并用 Grafana 查看流量和副本变化。[部署与实机验收](docs/k8s-product-lab.md)
 
-**[下载 v0.6.0 源码包（tar.gz）](https://github.com/zhusongmei9-tech/sre-failure-lab/releases/download/v0.6.0/sre-faliure-lab-v0.6.0.tar.gz)**。包内提供 FastAPI/Redis 实验室、K3s 监控、Ansible 部署、Service 故障演练以及可选 GitOps 配置。首次安装需联网获取依赖和镜像。
+**[从零复现教程](docs/from-zero/README.md) · [下载源码和教程（tar.gz）](https://github.com/zhusongmei9-tech/sre-failure-lab/releases/download/v0.6.0/sre-faliure-lab-v0.6.0.tar.gz)**
+
+从空白 Rocky Linux 9 虚机开始，按顺序完成 Docker Compose、K3s 监控、商品发布与扩缩容、故障自愈与回滚。首次安装需联网获取依赖和镜像。日常更新沿用同一个 Release 和附件名，通过 CI 后归档对应的 `main` 提交；下载时可在发布说明中核对源码提交和 SHA-256。[Release 说明](https://github.com/zhusongmei9-tech/sre-failure-lab/releases/tag/v0.6.0)
 
 在 ARM64 单节点实机上，Ansible 第二次部署为 `changed=0`。演练中就绪端点从 1 降到 0，Pod 仍然 Ready，集群内 HTTP 探针捕获了故障。从注入故障到恢复选择器并验证 HTTP 正常共 14 秒。GitOps 提供配置与操作手册，实机验收覆盖前两项。[137 验收记录](docs/ansible-k8s-validation-137.md)
 
