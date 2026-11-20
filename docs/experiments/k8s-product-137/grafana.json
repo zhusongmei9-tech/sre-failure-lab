@@ -1,0 +1,64 @@
+{
+  "dashboard_uid": "sre-k8s-product",
+  "source": "Grafana datasource proxy / Kubernetes Prometheus",
+  "sampled_from": "2026-11-20T09:50:03+00:00",
+  "sampled_to": "2026-11-20T09:53:48+00:00",
+  "grafana_range_ms": [
+    1795168203000,
+    1795168428000
+  ],
+  "active_targets": [
+    "up"
+  ],
+  "queries": [
+    {
+      "panel": "商品请求速率",
+      "series": "全部",
+      "samples": 23,
+      "min": 0.0,
+      "max": 35.222124888888885
+    },
+    {
+      "panel": "商品请求速率",
+      "series": "失败",
+      "samples": 23,
+      "min": 0.0,
+      "max": 0.0
+    },
+    {
+      "panel": "商品请求 P95",
+      "series": "服务端 P95",
+      "samples": 19,
+      "min": 4.749999999999999,
+      "max": 4.897598870056497
+    },
+    {
+      "panel": "API Pod CPU 用量",
+      "series": "{{pod}}",
+      "samples": 40,
+      "min": 2.057866068057177,
+      "max": 42.5476689637994
+    },
+    {
+      "panel": "发布与伸缩副本",
+      "series": "Deployment 就绪",
+      "samples": 23,
+      "min": 1.0,
+      "max": 2.0
+    },
+    {
+      "panel": "发布与伸缩副本",
+      "series": "HPA 当前",
+      "samples": 23,
+      "min": 1.0,
+      "max": 2.0
+    },
+    {
+      "panel": "发布与伸缩副本",
+      "series": "HPA 期望",
+      "samples": 23,
+      "min": 1.0,
+      "max": 2.0
+    }
+  ]
+}

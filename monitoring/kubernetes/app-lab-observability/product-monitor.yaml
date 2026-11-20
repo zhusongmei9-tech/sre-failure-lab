@@ -1,0 +1,22 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: product-api
+  namespace: sre-monitoring
+  labels:
+    release: sre-k8s
+    app.kubernetes.io/part-of: sre-failure-lab
+    app.kubernetes.io/managed-by: sre-failure-lab
+    sre-lab-role: product-lab
+spec:
+  namespaceSelector:
+    matchNames: [sre-app-lab]
+  selector:
+    matchLabels:
+      app: product-api
+      app.kubernetes.io/part-of: sre-failure-lab
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 10s
+      scrapeTimeout: 3s

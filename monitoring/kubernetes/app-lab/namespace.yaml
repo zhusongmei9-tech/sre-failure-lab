@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: sre-app-lab
+  labels:
+    app.kubernetes.io/part-of: sre-failure-lab
+    app.kubernetes.io/managed-by: sre-failure-lab
+    sre-lab-role: product-lab
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/enforce-version: v1.37
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: product-budget
+  namespace: sre-app-lab
+  labels:
+    app.kubernetes.io/part-of: sre-failure-lab
+    app.kubernetes.io/managed-by: sre-failure-lab
+    sre-lab-role: product-lab
+spec:
+  hard:
+    # Two API replicas, a rollout surge, Redis and space for terminating pods.
+    pods: "7"
+    requests.cpu: 250m
+    requests.memory: 384Mi
+    limits.cpu: 1400m
+    limits.memory: 1152Mi

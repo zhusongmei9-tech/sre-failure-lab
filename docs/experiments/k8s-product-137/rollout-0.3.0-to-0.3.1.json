@@ -1,0 +1,45 @@
+{
+  "passed": true,
+  "from_version": "0.3.0",
+  "to_version": "0.3.1",
+  "namespace": "sre-app-lab",
+  "release_seconds": 6.96,
+  "unready_candidate": "product-api-6b4c698cd8",
+  "rollback_seconds": 0.44,
+  "restored_readiness": true,
+  "traffic": {
+    "baseline": {
+      "requests": 1,
+      "failed": 0,
+      "responses": {
+        "0.3.0": 1
+      },
+      "p95_ms": 3.8
+    },
+    "rolling_update": {
+      "requests": 28,
+      "failed": 0,
+      "responses": {
+        "0.3.0": 21,
+        "0.3.1": 7
+      },
+      "p95_ms": 7.0
+    },
+    "rejected_readiness": {
+      "requests": 74,
+      "failed": 0,
+      "responses": {
+        "0.3.1": 74
+      },
+      "p95_ms": 6.1
+    },
+    "rollback": {
+      "requests": 2,
+      "failed": 0,
+      "responses": {
+        "0.3.1": 2
+      },
+      "p95_ms": 2.0
+    }
+  }
+}

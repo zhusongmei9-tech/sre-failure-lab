@@ -1,0 +1,103 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: product-api
+  namespace: sre-app-lab
+  labels:
+    app: product-api
+    app.kubernetes.io/part-of: sre-failure-lab
+    app.kubernetes.io/managed-by: sre-failure-lab
+    sre-lab-role: product-lab
+spec:
+  # HPA owns spec.replicas after the Deployment's default initial replica.
+  revisionHistoryLimit: 4
+  progressDeadlineSeconds: 90
+  minReadySeconds: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  selector:
+    matchLabels:
+      app: product-api
+  template:
+    metadata:
+      labels:
+        app: product-api
+        app.kubernetes.io/part-of: sre-failure-lab
+        app.kubernetes.io/managed-by: sre-failure-lab
+        sre-lab-role: product-lab
+    spec:
+      automountServiceAccountToken: false
+      terminationGracePeriodSeconds: 15
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: api
+          # K3s containerd must have the local lab image. APP_VERSION is baked in.
+          image: sre-lab-api:0.3.0
+          imagePullPolicy: Never
+          ports:
+            - name: http
+              containerPort: 8000
+          env:
+            - name: REDIS_URL
+              value: redis://redis:6379/0
+            - name: LAB_ENABLED
+              value: "false"
+            - name: FALLBACK_ENABLED
+              value: "false"
+          resources:
+            requests:
+              cpu: 25m
+              memory: 64Mi
+            limits:
+              cpu: 250m
+              memory: 192Mi
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: http
+            periodSeconds: 3
+            timeoutSeconds: 2
+          livenessProbe:
+            httpGet:
+              path: /health/live
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 2
+          lifecycle:
+            preStop:
+              # Allow EndpointSlice removal to propagate before Uvicorn stops.
+              exec:
+                command: ["/bin/sleep", "3"]
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: product-api
+  namespace: sre-app-lab
+  labels:
+    app: product-api
+    app.kubernetes.io/part-of: sre-failure-lab
+    app.kubernetes.io/managed-by: sre-failure-lab
+    sre-lab-role: product-lab
+spec:
+  type: ClusterIP
+  selector:
+    app: product-api
+  ports:
+    - name: http
+      port: 8000
+      targetPort: http
