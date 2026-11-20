@@ -209,7 +209,16 @@ def create_app(settings: Settings | None = None, redis_client=None) -> FastAPI:
             )
         return {"status": "ready", "redis": "ok"}
 
-    @app.get("/products/{product_id}", response_model=Product, tags=["products"])
+    async def track_product_request():
+        with metrics.inflight.track_inprogress():
+            yield
+
+    @app.get(
+        "/products/{product_id}",
+        response_model=Product,
+        tags=["products"],
+        dependencies=[Depends(track_product_request)],
+    )
     async def get_product(
         product_id: Annotated[int, Path(gt=0)], request: Request, response: Response
     ):
@@ -245,7 +254,8 @@ def create_app(settings: Settings | None = None, redis_client=None) -> FastAPI:
         try:
             # A total deadline bounds Redis work, including connection establishment.
             async with asyncio.timeout(settings.redis_timeout_seconds):
-                cached = await request.app.state.redis.get(key)
+                with metrics.redis_get_duration.time():
+                    cached = await request.app.state.redis.get(key)
                 if cached is not None:
                     try:
                         product = Product.model_validate_json(cached)
@@ -263,9 +273,9 @@ def create_app(settings: Settings | None = None, redis_client=None) -> FastAPI:
                     request.state.cache_result = "miss"
                 metrics.source.inc()
                 source_read = True
-                await request.app.state.redis.set(
-                    key, product.model_dump_json(), ex=settings.cache_ttl_seconds
-                )
+                payload = product.model_dump_json()
+                with metrics.redis_set_duration.time():
+                    await request.app.state.redis.set(key, payload, ex=settings.cache_ttl_seconds)
         except (RedisError, TimeoutError) as exc:
             request.state.cache_result = "error"
             request.state.error_type = type(exc).__name__

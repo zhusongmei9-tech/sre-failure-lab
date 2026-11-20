@@ -28,6 +28,7 @@ GUIDES = {
     "docs/from-zero/02-k3s-monitoring.md",
     "docs/from-zero/03-product-rollout-hpa.md",
     "docs/from-zero/04-operations.md",
+    "docs/from-zero/05-capacity.md",
 }
 BASE = f"repos/{REPO}"
 SOURCE_DIRS = {

@@ -4,6 +4,8 @@
 
 `main` 分支包含可独立部署的 Kubernetes 商品实验环境。在持续商品查询下，可复现滚动发布、失败回滚及 HPA 自动扩缩容，并用 Grafana 查看流量和副本变化。[部署与实机验收](docs/k8s-product-lab.md)
 
+容量实验使用独立的压测机，对同一商品服务的 1、2 个副本发送定速流量。报告区分短测和持续 10 分钟的达标档位，Grafana 同时显示吞吐、尾延迟、Redis 耗时、CPU 限流和节点资源。[双机容量实验教程](docs/from-zero/05-capacity.md)
+
 **[从零复现教程](docs/from-zero/README.md) · [下载源码和教程（tar.gz）](https://github.com/zhusongmei9-tech/sre-failure-lab/releases/download/v0.6.0/sre-faliure-lab-v0.6.0.tar.gz)**
 
 从空白 Rocky Linux 9 虚机开始，按顺序完成 Docker Compose、K3s 监控、商品发布与扩缩容、故障自愈与回滚。首次安装需联网获取依赖和镜像。日常更新沿用同一个 Release 和附件名，通过 CI 后归档对应的 `main` 提交；下载时可在发布说明中核对源码提交和 SHA-256。[Release 说明](https://github.com/zhusongmei9-tech/sre-failure-lab/releases/tag/v0.6.0)

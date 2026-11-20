@@ -1,0 +1,26 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../app-lab
+namespace: sre-capacity-lab
+images:
+  - name: sre-lab-api
+    newTag: capacity
+patches:
+  - patch: |-
+      apiVersion: autoscaling/v2
+      kind: HorizontalPodAutoscaler
+      metadata:
+        name: product-api
+        namespace: sre-app-lab
+      $patch: delete
+  - target:
+      kind: Namespace
+      name: sre-app-lab
+    patch: |-
+      - op: replace
+        path: /metadata/name
+        value: sre-capacity-lab
+      - op: replace
+        path: /metadata/labels/sre-lab-role
+        value: capacity-lab

@@ -39,6 +39,23 @@ class Metrics:
             buckets=(0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 0.75, 1, 2.5, 5),
             registry=self.registry,
         )
+        self.inflight = Gauge(
+            "lab_product_requests_in_flight",
+            "Product route requests currently being handled by this process",
+            registry=self.registry,
+        )
+        redis_duration = Histogram(
+            "lab_product_redis_command_duration_seconds",
+            "Time awaiting Redis from the product route, including pool wait and failed commands",
+            ["command"],
+            buckets=(
+                0.00025, 0.0005, 0.001, 0.0025, 0.005, 0.01, 0.025,
+                0.05, 0.1, 0.25, 0.5, 1, 2, 5,
+            ),
+            registry=self.registry,
+        )
+        self.redis_get_duration = redis_duration.labels("GET")
+        self.redis_set_duration = redis_duration.labels("SET")
         self.cache = Counter(
             "lab_cache_requests_total",
             "Product request cache outcomes (not Redis commands)",

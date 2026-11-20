@@ -122,6 +122,18 @@ def validate(args, report):
         run([args.promtool, "check", "rules", alert_dir / "rules.json"], env)
         output = run([args.promtool, "test", "rules", "rules.test.yml"], env, cwd=alert_dir)
         report["custom_rules"] = {"status": "passed", "output": output.strip()}
+        # Feed Grafana's actual expressions to the pinned Prometheus parser.
+        capacity = json.loads((ROOT / "monitoring/grafana/dashboards/k8s-capacity.json").read_text())
+        targets = [t["expr"] for panel in capacity["panels"] for t in panel["targets"]]
+        namespaces = capacity["templating"]["list"][0]["query"].split(",")
+        expressions = [
+            {"record": f"dashboard_check_{i}_{j}", "expr": expr.replace("${namespace}", namespace)}
+            for i, namespace in enumerate(namespaces) for j, expr in enumerate(targets)
+        ]
+        dashboard_rules = temporary / "capacity-promql.json"
+        dashboard_rules.write_text(json.dumps({"groups": [{"name": "capacity", "rules": expressions}]}))
+        run([args.promtool, "check", "rules", dashboard_rules], env)
+        report["capacity_dashboard"] = {"queries": len(targets), "namespaces": namespaces}
         # Keep existing business alert/SLO tests in the same no-cluster gate.
         for filename in ("rules.test.yml", "slo.test.yml"):
             run([args.promtool, "test", "rules", filename], env,
