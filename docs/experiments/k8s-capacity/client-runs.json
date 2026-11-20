@@ -1,0 +1,628 @@
+{
+  "workload_source_commit": "6ef4d9f9cb704975c2a1fe99ea6890bbe3706e11",
+  "client_source_sha256": {
+    "pre-release": {
+      "scripts/capacity.py": "ed043bc50caaf31ce4b6be8c865102b54f159dc83e937792ff2596ec90e341a8",
+      "loadgen/capacity.js": "7e5380b6a6664fefa1b7aa1babe6fd48b2e70b570e0190e66837a4d5323093d3"
+    },
+    "published": {
+      "scripts/capacity.py": "38c36a68f29bb13901b1b6ee422f0c8851df21247c493514cf8e86a41e8bd170",
+      "loadgen/capacity.js": "dba644f47673aae451da87cf3d61699772219422e3493446c23729f5b0de4170"
+    }
+  },
+  "route": "Independent Linux load generator via loopback SSH forward to Kubernetes ClusterIP",
+  "runs": [
+    {
+      "id": "one-mixed",
+      "fixed_api_replicas": 1,
+      "client_source": "pre-release",
+      "report": {
+        "base_url": "http://127.0.0.1:18080",
+        "rates": [
+          40,
+          80,
+          120
+        ],
+        "scenarios": [
+          "mixed"
+        ],
+        "seconds_per_stage": 30,
+        "preallocated_vus": 32,
+        "cold_wait_seconds": 65,
+        "success_target": 0.999,
+        "p95_target_ms": 100,
+        "minimum_capacity_seconds": 600,
+        "status": "complete",
+        "started_at": "2026-11-20T10:22:16.669+00:00",
+        "load_generator": "aarch64",
+        "stages": [
+          {
+            "scenario": "mixed",
+            "target_rps": 40,
+            "seconds": 30,
+            "planned": 1200,
+            "started": 1201,
+            "completed": 1201,
+            "actual_rps": 40.033,
+            "dropped_iterations": 0,
+            "http_2xx": 1201,
+            "valid_products": 1201,
+            "invalid_2xx": 0,
+            "http_429": 0,
+            "transport_errors": 0,
+            "timeouts": 0,
+            "valid_product_ratio": 1.0,
+            "p95_ms": 29,
+            "p99_ms": 52,
+            "cache": {
+              "HIT": 1201,
+              "MISS": 0,
+              "BYPASS": 0,
+              "UNKNOWN": 0
+            },
+            "initial_misses": null,
+            "checks": {
+              "all_requests_completed": true,
+              "no_dropped_iterations": true,
+              "offered_target": true,
+              "valid_product_ratio": true,
+              "p95_ms": true
+            },
+            "passed": true,
+            "started_at": "2026-11-20T10:22:16.957+00:00",
+            "ended_at": "2026-11-20T10:22:47.096+00:00"
+          },
+          {
+            "scenario": "mixed",
+            "target_rps": 80,
+            "seconds": 30,
+            "planned": 2400,
+            "started": 2401,
+            "completed": 2401,
+            "actual_rps": 80.033,
+            "dropped_iterations": 0,
+            "http_2xx": 2401,
+            "valid_products": 2401,
+            "invalid_2xx": 0,
+            "http_429": 0,
+            "transport_errors": 0,
+            "timeouts": 0,
+            "valid_product_ratio": 1.0,
+            "p95_ms": 16,
+            "p99_ms": 39,
+            "cache": {
+              "HIT": 2398,
+              "MISS": 3,
+              "BYPASS": 0,
+              "UNKNOWN": 0
+            },
+            "initial_misses": null,
+            "checks": {
+              "all_requests_completed": true,
+              "no_dropped_iterations": true,
+              "offered_target": true,
+              "valid_product_ratio": true,
+              "p95_ms": true
+            },
+            "passed": true,
+            "started_at": "2026-11-20T10:22:47.248+00:00",
+            "ended_at": "2026-11-20T10:23:17.378+00:00"
+          },
+          {
+            "scenario": "mixed",
+            "target_rps": 120,
+            "seconds": 30,
+            "planned": 3600,
+            "started": 3600,
+            "completed": 3600,
+            "actual_rps": 120.0,
+            "dropped_iterations": 0,
+            "http_2xx": 3600,
+            "valid_products": 3600,
+            "invalid_2xx": 0,
+            "http_429": 0,
+            "transport_errors": 0,
+            "timeouts": 0,
+            "valid_product_ratio": 1.0,
+            "p95_ms": 42,
+            "p99_ms": 63,
+            "cache": {
+              "HIT": 3600,
+              "MISS": 0,
+              "BYPASS": 0,
+              "UNKNOWN": 0
+            },
+            "initial_misses": null,
+            "checks": {
+              "all_requests_completed": true,
+              "no_dropped_iterations": true,
+              "offered_target": true,
+              "valid_product_ratio": true,
+              "p95_ms": true
+            },
+            "passed": true,
+            "started_at": "2026-11-20T10:23:17.529+00:00",
+            "ended_at": "2026-11-20T10:23:47.686+00:00"
+          }
+        ],
+        "highest_passed_rps": {
+          "mixed": 120
+        },
+        "capacity_rps": {
+          "mixed": null
+        },
+        "k6_version": "k6 v1.3.0 (commit/5870e99ae8, go1.25.1, linux/arm64)",
+        "app_version": "capacity",
+        "ended_at": "2026-11-20T10:23:47.689+00:00"
+      }
+    },
+    {
+      "id": "two-mixed",
+      "fixed_api_replicas": 2,
+      "client_source": "pre-release",
+      "report": {
+        "base_url": "http://127.0.0.1:18080",
+        "rates": [
+          40,
+          80,
+          120
+        ],
+        "scenarios": [
+          "mixed"
+        ],
+        "seconds_per_stage": 30,
+        "preallocated_vus": 32,
+        "cold_wait_seconds": 65,
+        "success_target": 0.999,
+        "p95_target_ms": 100,
+        "minimum_capacity_seconds": 600,
+        "status": "complete",
+        "started_at": "2026-11-20T10:23:56.157+00:00",
+        "load_generator": "aarch64",
+        "stages": [
+          {
+            "scenario": "mixed",
+            "target_rps": 40,
+            "seconds": 30,
+            "planned": 1200,
+            "started": 1201,
+            "completed": 1201,
+            "actual_rps": 40.033,
+            "dropped_iterations": 0,
+            "http_2xx": 1201,
+            "valid_products": 1201,
+            "invalid_2xx": 0,
+            "http_429": 0,
+            "transport_errors": 0,
+            "timeouts": 0,
+            "valid_product_ratio": 1.0,
+            "p95_ms": 8,
+            "p99_ms": 57,
+            "cache": {
+              "HIT": 1198,
+              "MISS": 3,
+              "BYPASS": 0,
+              "UNKNOWN": 0
+            },
+            "initial_misses": null,
+            "checks": {
+              "all_requests_completed": true,
+              "no_dropped_iterations": true,
+              "offered_target": true,
+              "valid_product_ratio": true,
+              "p95_ms": true
+            },
+            "passed": true,
+            "started_at": "2026-11-20T10:23:56.189+00:00",
+            "ended_at": "2026-11-20T10:24:26.267+00:00"
+          },
+          {
+            "scenario": "mixed",
+            "target_rps": 80,
+            "seconds": 30,
+            "planned": 2400,
+            "started": 2401,
+            "completed": 2401,
+            "actual_rps": 80.033,
+            "dropped_iterations": 0,
+            "http_2xx": 2401,
+            "valid_products": 2401,
+            "invalid_2xx": 0,
+            "http_429": 0,
+            "transport_errors": 0,
+            "timeouts": 0,
+            "valid_product_ratio": 1.0,
+            "p95_ms": 7,
+            "p99_ms": 35,
+            "cache": {
+              "HIT": 2401,
+              "MISS": 0,
+              "BYPASS": 0,
+              "UNKNOWN": 0
+            },
+            "initial_misses": null,
+            "checks": {
+              "all_requests_completed": true,
+              "no_dropped_iterations": true,
+              "offered_target": true,
+              "valid_product_ratio": true,
+              "p95_ms": true
+            },
+            "passed": true,
+            "started_at": "2026-11-20T10:24:26.279+00:00",
+            "ended_at": "2026-11-20T10:24:56.347+00:00"
+          },
+          {
+            "scenario": "mixed",
+            "target_rps": 120,
+            "seconds": 30,
+            "planned": 3600,
+            "started": 3601,
+            "completed": 3601,
+            "actual_rps": 120.033,
+            "dropped_iterations": 0,
+            "http_2xx": 3601,
+            "valid_products": 3601,
+            "invalid_2xx": 0,
+            "http_429": 0,
+            "transport_errors": 0,
+            "timeouts": 0,
+            "valid_product_ratio": 1.0,
+            "p95_ms": 6,
+            "p99_ms": 29,
+            "cache": {
+              "HIT": 3598,
+              "MISS": 3,
+              "BYPASS": 0,
+              "UNKNOWN": 0
+            },
+            "initial_misses": null,
+            "checks": {
+              "all_requests_completed": true,
+              "no_dropped_iterations": true,
+              "offered_target": true,
+              "valid_product_ratio": true,
+              "p95_ms": true
+            },
+            "passed": true,
+            "started_at": "2026-11-20T10:24:56.356+00:00",
+            "ended_at": "2026-11-20T10:25:26.428+00:00"
+          }
+        ],
+        "highest_passed_rps": {
+          "mixed": 120
+        },
+        "capacity_rps": {
+          "mixed": null
+        },
+        "k6_version": "k6 v1.3.0 (commit/5870e99ae8, go1.25.1, linux/arm64)",
+        "app_version": "capacity",
+        "ended_at": "2026-11-20T10:25:26.428+00:00"
+      }
+    },
+    {
+      "id": "two-mixed-steady",
+      "fixed_api_replicas": 2,
+      "client_source": "pre-release",
+      "report": {
+        "base_url": "http://127.0.0.1:18080",
+        "rates": [
+          120
+        ],
+        "scenarios": [
+          "mixed"
+        ],
+        "seconds_per_stage": 600,
+        "preallocated_vus": 32,
+        "cold_wait_seconds": 65,
+        "success_target": 0.999,
+        "p95_target_ms": 100,
+        "minimum_capacity_seconds": 600,
+        "status": "complete",
+        "started_at": "2026-11-20T10:25:26.467+00:00",
+        "load_generator": "aarch64",
+        "stages": [
+          {
+            "scenario": "mixed",
+            "target_rps": 120,
+            "seconds": 600,
+            "planned": 72000,
+            "started": 72001,
+            "completed": 72001,
+            "actual_rps": 120.002,
+            "dropped_iterations": 0,
+            "http_2xx": 72001,
+            "valid_products": 72001,
+            "invalid_2xx": 0,
+            "http_429": 0,
+            "transport_errors": 0,
+            "timeouts": 0,
+            "valid_product_ratio": 1.0,
+            "p95_ms": 6,
+            "p99_ms": 30,
+            "cache": {
+              "HIT": 71971,
+              "MISS": 30,
+              "BYPASS": 0,
+              "UNKNOWN": 0
+            },
+            "initial_misses": null,
+            "checks": {
+              "all_requests_completed": true,
+              "no_dropped_iterations": true,
+              "offered_target": true,
+              "valid_product_ratio": true,
+              "p95_ms": true
+            },
+            "passed": true,
+            "started_at": "2026-11-20T10:25:26.502+00:00",
+            "ended_at": "2026-11-20T10:35:26.597+00:00"
+          }
+        ],
+        "highest_passed_rps": {
+          "mixed": 120
+        },
+        "capacity_rps": {
+          "mixed": 120
+        },
+        "k6_version": "k6 v1.3.0 (commit/5870e99ae8, go1.25.1, linux/arm64)",
+        "app_version": "capacity",
+        "ended_at": "2026-11-20T10:35:26.599+00:00"
+      }
+    },
+    {
+      "id": "two-cache-modes",
+      "fixed_api_replicas": 2,
+      "client_source": "published",
+      "report": {
+        "base_url": "http://127.0.0.1:18080",
+        "rates": [
+          40
+        ],
+        "scenarios": [
+          "hot",
+          "cold-start"
+        ],
+        "seconds_per_stage": 25,
+        "preallocated_vus": 32,
+        "cold_wait_seconds": 65,
+        "success_target": 0.999,
+        "p95_target_ms": 100,
+        "minimum_capacity_seconds": 600,
+        "status": "complete",
+        "started_at": "2026-11-20T10:35:26.646+00:00",
+        "load_generator": "aarch64",
+        "stages": [
+          {
+            "scenario": "hot",
+            "target_rps": 40,
+            "seconds": 25,
+            "planned": 1000,
+            "started": 1001,
+            "completed": 1001,
+            "actual_rps": 40.04,
+            "dropped_iterations": 0,
+            "http_2xx": 1001,
+            "valid_products": 1001,
+            "invalid_2xx": 0,
+            "http_429": 0,
+            "http_5xx": 0,
+            "transport_errors": 0,
+            "timeouts": 0,
+            "valid_product_ratio": 1.0,
+            "p95_ms": 8,
+            "p99_ms": 42,
+            "cache": {
+              "HIT": 1001,
+              "MISS": 0,
+              "BYPASS": 0,
+              "UNKNOWN": 0
+            },
+            "initial_misses": null,
+            "checks": {
+              "all_requests_completed": true,
+              "no_dropped_iterations": true,
+              "offered_target": true,
+              "valid_product_ratio": true,
+              "p95_ms": true
+            },
+            "passed": true,
+            "started_at": "2026-11-20T10:35:26.680+00:00",
+            "ended_at": "2026-11-20T10:35:51.763+00:00"
+          },
+          {
+            "scenario": "cold-start",
+            "target_rps": 40,
+            "seconds": 25,
+            "planned": 1000,
+            "started": 1000,
+            "completed": 1000,
+            "actual_rps": 40.0,
+            "dropped_iterations": 0,
+            "http_2xx": 1000,
+            "valid_products": 1000,
+            "invalid_2xx": 0,
+            "http_429": 0,
+            "http_5xx": 0,
+            "transport_errors": 0,
+            "timeouts": 0,
+            "valid_product_ratio": 1.0,
+            "p95_ms": 9,
+            "p99_ms": 20.00999999999999,
+            "cache": {
+              "HIT": 997,
+              "MISS": 3,
+              "BYPASS": 0,
+              "UNKNOWN": 0
+            },
+            "initial_misses": 3,
+            "checks": {
+              "all_requests_completed": true,
+              "no_dropped_iterations": true,
+              "offered_target": true,
+              "valid_product_ratio": true,
+              "p95_ms": true,
+              "verified_first_three_misses": true
+            },
+            "passed": true,
+            "started_at": "2026-11-20T10:36:56.774+00:00",
+            "ended_at": "2026-11-20T10:37:21.899+00:00"
+          }
+        ],
+        "highest_passed_rps": {
+          "hot": 40,
+          "cold-start": 40
+        },
+        "capacity_rps": {
+          "hot": null,
+          "cold-start": null
+        },
+        "k6_version": "k6 v1.3.0 (commit/5870e99ae8, go1.25.1, linux/arm64)",
+        "app_version": "capacity",
+        "ended_at": "2026-11-20T10:37:21.901+00:00"
+      }
+    },
+    {
+      "id": "one-mixed-steady",
+      "fixed_api_replicas": 1,
+      "client_source": "published",
+      "report": {
+        "base_url": "http://127.0.0.1:18080",
+        "rates": [
+          120
+        ],
+        "scenarios": [
+          "mixed"
+        ],
+        "seconds_per_stage": 600,
+        "preallocated_vus": 32,
+        "cold_wait_seconds": 65,
+        "success_target": 0.999,
+        "p95_target_ms": 100,
+        "minimum_capacity_seconds": 600,
+        "status": "complete",
+        "started_at": "2026-11-20T10:37:23.252+00:00",
+        "load_generator": "aarch64",
+        "stages": [
+          {
+            "scenario": "mixed",
+            "target_rps": 120,
+            "seconds": 600,
+            "planned": 72000,
+            "started": 71977,
+            "completed": 71977,
+            "actual_rps": 119.962,
+            "dropped_iterations": 23,
+            "http_2xx": 71977,
+            "valid_products": 71977,
+            "invalid_2xx": 0,
+            "http_429": 0,
+            "http_5xx": 0,
+            "transport_errors": 0,
+            "timeouts": 0,
+            "valid_product_ratio": 1.0,
+            "p95_ms": 42,
+            "p99_ms": 67,
+            "cache": {
+              "HIT": 71944,
+              "MISS": 33,
+              "BYPASS": 0,
+              "UNKNOWN": 0
+            },
+            "initial_misses": null,
+            "checks": {
+              "all_requests_completed": true,
+              "no_dropped_iterations": false,
+              "offered_target": false,
+              "valid_product_ratio": true,
+              "p95_ms": true
+            },
+            "passed": false,
+            "started_at": "2026-11-20T10:37:23.280+00:00",
+            "ended_at": "2026-11-20T10:47:23.398+00:00"
+          }
+        ],
+        "highest_passed_rps": {
+          "mixed": null
+        },
+        "capacity_rps": {
+          "mixed": null
+        },
+        "k6_version": "k6 v1.3.0 (commit/5870e99ae8, go1.25.1, linux/arm64)",
+        "app_version": "capacity",
+        "ended_at": "2026-11-20T10:47:23.399+00:00"
+      }
+    },
+    {
+      "id": "one-mixed-steady-80",
+      "fixed_api_replicas": 1,
+      "client_source": "published",
+      "report": {
+        "base_url": "http://127.0.0.1:18080",
+        "rates": [
+          80
+        ],
+        "scenarios": [
+          "mixed"
+        ],
+        "seconds_per_stage": 600,
+        "preallocated_vus": 32,
+        "cold_wait_seconds": 65,
+        "success_target": 0.999,
+        "p95_target_ms": 100,
+        "minimum_capacity_seconds": 600,
+        "status": "complete",
+        "started_at": "2026-11-20T10:47:24.559+00:00",
+        "load_generator": "aarch64",
+        "stages": [
+          {
+            "scenario": "mixed",
+            "target_rps": 80,
+            "seconds": 600,
+            "planned": 48000,
+            "started": 48001,
+            "completed": 48001,
+            "actual_rps": 80.002,
+            "dropped_iterations": 0,
+            "http_2xx": 48001,
+            "valid_products": 48001,
+            "invalid_2xx": 0,
+            "http_429": 0,
+            "http_5xx": 0,
+            "transport_errors": 0,
+            "timeouts": 0,
+            "valid_product_ratio": 1.0,
+            "p95_ms": 7,
+            "p99_ms": 38,
+            "cache": {
+              "HIT": 47971,
+              "MISS": 30,
+              "BYPASS": 0,
+              "UNKNOWN": 0
+            },
+            "initial_misses": null,
+            "checks": {
+              "all_requests_completed": true,
+              "no_dropped_iterations": true,
+              "offered_target": true,
+              "valid_product_ratio": true,
+              "p95_ms": true
+            },
+            "passed": true,
+            "started_at": "2026-11-20T10:47:24.592+00:00",
+            "ended_at": "2026-11-20T10:57:24.719+00:00"
+          }
+        ],
+        "highest_passed_rps": {
+          "mixed": 80
+        },
+        "capacity_rps": {
+          "mixed": 80
+        },
+        "k6_version": "k6 v1.3.0 (commit/5870e99ae8, go1.25.1, linux/arm64)",
+        "app_version": "capacity",
+        "ended_at": "2026-11-20T10:57:24.720+00:00"
+      }
+    }
+  ]
+}

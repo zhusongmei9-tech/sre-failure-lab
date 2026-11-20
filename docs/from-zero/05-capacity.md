@@ -2,6 +2,8 @@
 
 本章要回答的是：在指定机器、流量和延迟目标下，商品服务能连续十分钟处理多少次查询？137 运行 K3s、商品服务和监控，135 运行压测工具 k6。两台机器可以换成自己的 Linux 虚机。负载机只需要能 SSH 登录 137 的普通账号并允许 TCP 转发，集群管理权限留在 137。先完成[单节点 K3s 与监控](02-k3s-monitoring.md)。
 
+可对照[双机实测记录与原始数据](../experiments/k8s-capacity/README.md)理解自己的结果。读表时先核对机器规格、每个 Pod 的资源配额、访问路径、实际吞吐和测量时长。
+
 ## 1. 在 137 准备独立商品服务
 
 在 **137 的 root Bash** 进入项目，确认源码来自你准备复现的提交或 Release 附件。容量实验创建 `sre-capacity-lab`，使用自己的 Redis 和商品 API。商品查询走 ClusterIP，API 关闭实验控制接口。此命名空间没有 HPA，分别固定 1、2 个 API 副本。第三章的自动伸缩实验仍在 `sre-app-lab`。[容量覆盖配置](../../monitoring/kubernetes/capacity-lab/kustomization.yaml) · [基础清单](../../monitoring/kubernetes/app-lab)
@@ -182,6 +184,19 @@ k6 默认复用 HTTP 连接，Kubernetes Service 可以把同一条连接的多�
 ```promql
 sum by (pod) (rate(lab_http_requests_total{namespace="sre-capacity-lab",service="product-api"}[1m]))
 ```
+
+需要保留看板证据时，在 137 的项目目录导出，同一份报告会按 Pod、容器和 Redis 命令分别统计每条曲线的有效样本、最小值、均值、最大值。在两台机器分别执行 `date -u` 核对时间，可用 `chronyc tracking` 查看同步状态。若时钟有偏差，记录差值，再换算为 **137 的 UTC 时间**选取窗口。两份报告保留各自原始时间戳。在连续十分钟的流量中，可以另导出开始两分钟以后至结束前的区间，让 1–2 分钟的速率窗口完全落在恒定负载内。空采样保留为空值。[导出工具](../../scripts/export_capacity_metrics.py)
+
+```bash
+cd /opt/sre-failure-lab
+gateway=$(docker network inspect bridge --format '{{(index .IPAM.Config 0).Gateway}}')
+read -r -p '137 上窗口开始 UTC，例如 2026-11-20T10:26:30Z: ' START_UTC
+read -r -p '137 上窗口结束 UTC，例如 2026-11-20T10:34:00Z: ' END_UTC
+python3 scripts/export_capacity_metrics.py --prometheus-url "http://${gateway}:19090" \
+  --namespace sre-capacity-lab --start "$START_UTC" --end "$END_UTC" --step 10
+```
+
+工具打印新 JSON 报告路径。按 Pod 吞吐在面板 1 的 C 查询中；每条序列的 `labels.pod` 给出 Pod 名，`mean` 为该窗口内采样吞吐的算术平均（请求/秒）。需要精确计数时可在 137 对各 Pod 的商品请求计数器做起止差分，并检查区间内是否发生重启。
 
 ## 6. 撤流、恢复或移除
 

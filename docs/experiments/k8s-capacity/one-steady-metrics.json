@@ -1,0 +1,397 @@
+{
+  "dashboard_uid": "sre-k8s-capacity",
+  "namespace": "sre-capacity-lab",
+  "start": "2026-11-20T10:38:30+00:00",
+  "end": "2026-11-20T10:46:08+00:00",
+  "step_seconds": 10,
+  "queries": [
+    {
+      "panel_id": 1,
+      "title": "商品 API 完成吞吐",
+      "ref_id": "A",
+      "expr": "sum(rate(lab_http_requests_total{namespace=\"sre-capacity-lab\",service=\"product-api\"}[1m]))",
+      "warning_count": 0,
+      "finite_samples": 46,
+      "series": [
+        {
+          "labels": {},
+          "samples": 46,
+          "finite_samples": 46,
+          "min": 119.78,
+          "mean": 119.95521739130434,
+          "max": 120.02
+        }
+      ]
+    },
+    {
+      "panel_id": 1,
+      "title": "商品 API 完成吞吐",
+      "ref_id": "B",
+      "expr": "sum(rate(lab_http_requests_total{namespace=\"sre-capacity-lab\",service=\"product-api\",status_code!~\"2..\"}[1m]))",
+      "warning_count": 0,
+      "finite_samples": 46,
+      "series": [
+        {
+          "labels": {},
+          "samples": 46,
+          "finite_samples": 46,
+          "min": 0.0,
+          "mean": 0.0,
+          "max": 0.0
+        }
+      ]
+    },
+    {
+      "panel_id": 1,
+      "title": "商品 API 完成吞吐",
+      "ref_id": "C",
+      "expr": "sum by (pod) (rate(lab_http_requests_total{namespace=\"sre-capacity-lab\",service=\"product-api\"}[1m]))",
+      "warning_count": 0,
+      "finite_samples": 46,
+      "series": [
+        {
+          "labels": {
+            "pod": "product-api-7b857c8bdc-dx4dr"
+          },
+          "samples": 46,
+          "finite_samples": 46,
+          "min": 119.78,
+          "mean": 119.95521739130434,
+          "max": 120.02
+        }
+      ]
+    },
+    {
+      "panel_id": 2,
+      "title": "商品 API 服务端延迟",
+      "ref_id": "A",
+      "expr": "1000 * histogram_quantile(0.95, sum by (le) (rate(lab_http_request_duration_seconds_bucket{namespace=\"sre-capacity-lab\",service=\"product-api\"}[1m])))",
+      "warning_count": 0,
+      "finite_samples": 46,
+      "series": [
+        {
+          "labels": {},
+          "samples": 46,
+          "finite_samples": 46,
+          "min": 8.45965770171149,
+          "mean": 9.491372516907813,
+          "max": 11.147350993377454
+        }
+      ]
+    },
+    {
+      "panel_id": 2,
+      "title": "商品 API 服务端延迟",
+      "ref_id": "B",
+      "expr": "1000 * histogram_quantile(0.99, sum by (le) (rate(lab_http_request_duration_seconds_bucket{namespace=\"sre-capacity-lab\",service=\"product-api\"}[1m])))",
+      "warning_count": 0,
+      "finite_samples": 46,
+      "series": [
+        {
+          "labels": {},
+          "samples": 46,
+          "finite_samples": 46,
+          "min": 35.638297872340274,
+          "mean": 56.10676642290327,
+          "max": 79.5196078431372
+        }
+      ]
+    },
+    {
+      "panel_id": 3,
+      "title": "每个 API Pod 的在途商品请求",
+      "ref_id": "A",
+      "expr": "max by (pod) (lab_product_requests_in_flight{namespace=\"sre-capacity-lab\",service=\"product-api\"})",
+      "warning_count": 0,
+      "finite_samples": 46,
+      "series": [
+        {
+          "labels": {
+            "pod": "product-api-7b857c8bdc-dx4dr"
+          },
+          "samples": 46,
+          "finite_samples": 46,
+          "min": 0.0,
+          "mean": 0.30434782608695654,
+          "max": 5.0
+        }
+      ]
+    },
+    {
+      "panel_id": 3,
+      "title": "每个 API Pod 的在途商品请求",
+      "ref_id": "B",
+      "expr": "sum by (pod) (rate(lab_http_request_duration_seconds_sum{namespace=\"sre-capacity-lab\",service=\"product-api\"}[1m]))",
+      "warning_count": 0,
+      "finite_samples": 46,
+      "series": [
+        {
+          "labels": {
+            "pod": "product-api-7b857c8bdc-dx4dr"
+          },
+          "samples": 46,
+          "finite_samples": 46,
+          "min": 0.27659098239961166,
+          "mean": 0.3683637566011377,
+          "max": 0.4553942319620182
+        }
+      ]
+    },
+    {
+      "panel_id": 4,
+      "title": "API 等待 Redis 的 P95",
+      "ref_id": "A",
+      "expr": "1000 * histogram_quantile(0.95, sum by (le, command) (rate(lab_product_redis_command_duration_seconds_bucket{namespace=\"sre-capacity-lab\",service=\"product-api\"}[1m])))",
+      "warning_count": 0,
+      "finite_samples": 84,
+      "series": [
+        {
+          "labels": {
+            "command": "GET"
+          },
+          "samples": 46,
+          "finite_samples": 46,
+          "min": 3.474025974025969,
+          "mean": 4.230960554771253,
+          "max": 4.718650793650792
+        },
+        {
+          "labels": {
+            "command": "SET"
+          },
+          "samples": 46,
+          "finite_samples": 38,
+          "min": 0.2375,
+          "mean": 3.9296052631578946,
+          "max": 46.25
+        }
+      ]
+    },
+    {
+      "panel_id": 5,
+      "title": "Pod CPU 用量",
+      "ref_id": "A",
+      "expr": "1000 * max by (pod, container) (rate(container_cpu_usage_seconds_total{job=\"kubelet\",metrics_path=\"/metrics/cadvisor\",namespace=\"sre-capacity-lab\",container=~\"api|redis\",pod=~\"(product-api|redis)-.+\"}[2m]))",
+      "warning_count": 0,
+      "finite_samples": 92,
+      "series": [
+        {
+          "labels": {
+            "pod": "product-api-7b857c8bdc-dx4dr",
+            "container": "api"
+          },
+          "samples": 46,
+          "finite_samples": 46,
+          "min": 135.56033750000012,
+          "mean": 197.38737278882033,
+          "max": 205.576236638839
+        },
+        {
+          "labels": {
+            "pod": "redis-7b99656544-qdwk7",
+            "container": "redis"
+          },
+          "samples": 46,
+          "finite_samples": 46,
+          "min": 8.851025000000014,
+          "mean": 15.682302027176421,
+          "max": 17.19130973410723
+        }
+      ]
+    },
+    {
+      "panel_id": 6,
+      "title": "Pod CPU 限流时间",
+      "ref_id": "A",
+      "expr": "1000 * max by (pod, container) (rate(container_cpu_cfs_throttled_seconds_total{job=\"kubelet\",metrics_path=\"/metrics/cadvisor\",namespace=\"sre-capacity-lab\",container=~\"api|redis\",pod=~\"(product-api|redis)-.+\"}[2m]))",
+      "warning_count": 0,
+      "finite_samples": 92,
+      "series": [
+        {
+          "labels": {
+            "pod": "product-api-7b857c8bdc-dx4dr",
+            "container": "api"
+          },
+          "samples": 46,
+          "finite_samples": 46,
+          "min": 96.14338750000002,
+          "mean": 128.15712115704403,
+          "max": 149.8440536096856
+        },
+        {
+          "labels": {
+            "pod": "redis-7b99656544-qdwk7",
+            "container": "redis"
+          },
+          "samples": 46,
+          "finite_samples": 46,
+          "min": 10.550850000000002,
+          "mean": 24.0361619475318,
+          "max": 32.50997522493157
+        }
+      ]
+    },
+    {
+      "panel_id": 7,
+      "title": "节点空闲 CPU",
+      "ref_id": "A",
+      "expr": "sum by (instance) (rate(node_cpu_seconds_total{job=\"node-exporter\",mode=\"idle\"}[2m]))",
+      "warning_count": 0,
+      "finite_samples": 46,
+      "series": [
+        {
+          "labels": {},
+          "samples": 46,
+          "finite_samples": 46,
+          "min": 1.418111111111102,
+          "mean": 1.4223333333333326,
+          "max": 1.426111111111115
+        }
+      ]
+    },
+    {
+      "panel_id": 8,
+      "title": "节点可用内存",
+      "ref_id": "A",
+      "expr": "max by (instance) (node_memory_MemAvailable_bytes{job=\"node-exporter\"})",
+      "warning_count": 0,
+      "finite_samples": 46,
+      "series": [
+        {
+          "labels": {},
+          "samples": 46,
+          "finite_samples": 46,
+          "min": 1928298496.0,
+          "mean": 1971762576.6956522,
+          "max": 2029211648.0
+        }
+      ]
+    },
+    {
+      "panel_id": 9,
+      "title": "节点文件系统可用磁盘",
+      "ref_id": "A",
+      "expr": "max by (instance, device, mountpoint) (node_filesystem_avail_bytes{job=\"node-exporter\",fstype!~\"tmpfs|devtmpfs|overlay|squashfs|nsfs|tracefs|proc|sysfs|cgroup2?|autofs\",mountpoint!~\"/run(/.*)?|.*/kubelet/pods/.*\"})",
+      "warning_count": 0,
+      "finite_samples": 138,
+      "series": [
+        {
+          "labels": {
+            "mountpoint": "/"
+          },
+          "samples": 46,
+          "finite_samples": 46,
+          "min": 9146716160.0,
+          "mean": 9151843105.391304,
+          "max": 9157730304.0
+        },
+        {
+          "labels": {
+            "mountpoint": "/boot/efi"
+          },
+          "samples": 46,
+          "finite_samples": 46,
+          "min": 620281856.0,
+          "mean": 620281856.0,
+          "max": 620281856.0
+        },
+        {
+          "labels": {
+            "mountpoint": "/boot"
+          },
+          "samples": 46,
+          "finite_samples": 46,
+          "min": 723537920.0,
+          "mean": 723537920.0,
+          "max": 723537920.0
+        }
+      ]
+    },
+    {
+      "panel_id": 10,
+      "title": "就绪 API 副本",
+      "ref_id": "A",
+      "expr": "max(kube_deployment_status_replicas_ready{namespace=\"sre-capacity-lab\",deployment=\"product-api\"})",
+      "warning_count": 0,
+      "finite_samples": 46,
+      "series": [
+        {
+          "labels": {},
+          "samples": 46,
+          "finite_samples": 46,
+          "min": 1.0,
+          "mean": 1.0,
+          "max": 1.0
+        }
+      ]
+    },
+    {
+      "panel_id": 10,
+      "title": "就绪 API 副本",
+      "ref_id": "B",
+      "expr": "max(kube_deployment_spec_replicas{namespace=\"sre-capacity-lab\",deployment=\"product-api\"})",
+      "warning_count": 0,
+      "finite_samples": 46,
+      "series": [
+        {
+          "labels": {},
+          "samples": 46,
+          "finite_samples": 46,
+          "min": 1.0,
+          "mean": 1.0,
+          "max": 1.0
+        }
+      ]
+    },
+    {
+      "panel_id": 11,
+      "title": "商品缓存结果",
+      "ref_id": "A",
+      "expr": "sum by (result) (rate(lab_cache_requests_total{namespace=\"sre-capacity-lab\",service=\"product-api\"}[1m]))",
+      "warning_count": 0,
+      "finite_samples": 184,
+      "series": [
+        {
+          "labels": {
+            "result": "error"
+          },
+          "samples": 46,
+          "finite_samples": 46,
+          "min": 0.0,
+          "mean": 0.0,
+          "max": 0.0
+        },
+        {
+          "labels": {
+            "result": "hit"
+          },
+          "samples": 46,
+          "finite_samples": 46,
+          "min": 119.68,
+          "mean": 119.8991304347826,
+          "max": 120.02
+        },
+        {
+          "labels": {
+            "result": "invalid"
+          },
+          "samples": 46,
+          "finite_samples": 46,
+          "min": 0.0,
+          "mean": 0.0,
+          "max": 0.0
+        },
+        {
+          "labels": {
+            "result": "miss"
+          },
+          "samples": 46,
+          "finite_samples": 46,
+          "min": 0.0,
+          "mean": 0.05608695652173913,
+          "max": 0.1
+        }
+      ]
+    }
+  ]
+}
