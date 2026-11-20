@@ -1,6 +1,6 @@
 [project]
 name = "sre-failure-lab"
-version = "0.5.0"
+version = "0.6.0"
 description = "A local SRE failure lab with FastAPI and Redis"
 requires-python = ">=3.12"
 dependencies = [

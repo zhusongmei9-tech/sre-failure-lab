@@ -1,0 +1,75 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  generateName: demo-service-smoke-
+  namespace: sre-k8s-demo
+  labels:
+    app.kubernetes.io/part-of: sre-failure-lab
+spec:
+  backoffLimit: 0
+  activeDeadlineSeconds: 60
+  ttlSecondsAfterFinished: 180
+  template:
+    spec:
+      automountServiceAccountToken: false
+      enableServiceLinks: false
+      restartPolicy: Never
+      terminationGracePeriodSeconds: 1
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        runAsGroup: 65534
+        fsGroup: 65534
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: probe
+          image: busybox:1.37.0
+          imagePullPolicy: IfNotPresent
+          command: [sh, -ec]
+          args:
+            - |
+              host="demo-web.sre-k8s-demo.svc.${CLUSTER_DOMAIN}."
+              if ! timeout 8 nslookup "$host"; then
+                echo 'dns=failed'
+                exit 10
+              fi
+              echo 'dns=ok'
+              if ! timeout 8 wget -Y off -T 5 -S -O /work/body "http://$host:8080/" 2>/work/headers; then
+                echo 'http=failed'
+                exit 20
+              fi
+              status=$(awk '$1 ~ /^HTTP\// {print $2}' /work/headers)
+              if [ "$status" != "200" ]; then
+                echo 'http=failed expected_status=200'
+                exit 20
+              fi
+              echo 'http=200'
+              printf 'SRE Kubernetes demo is ready\n' > /work/expected
+              if ! cmp -s /work/expected /work/body; then
+                echo 'body=failed'
+                exit 30
+              fi
+              echo 'body=ok'
+          env:
+            - name: CLUSTER_DOMAIN
+              value: cluster.local
+          resources:
+            requests:
+              cpu: 5m
+              memory: 4Mi
+            limits:
+              cpu: 50m
+              memory: 16Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+          volumeMounts:
+            - name: scratch
+              mountPath: /work
+      volumes:
+        - name: scratch
+          emptyDir:
+            sizeLimit: 1Mi

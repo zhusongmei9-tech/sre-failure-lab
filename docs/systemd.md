@@ -23,7 +23,7 @@ cd /opt/sre-failure-lab
 sudo bash scripts/install_systemd.sh
 ```
 
-安装器先检查运行文件和发布状态，只有 idle 才进入安装操作。随后停止并 disable 旧的独立自愈服务，安装父、子单元并执行 `daemon-reload`，将主服务设为开机启动；随后启动主服务，若已经 active 则执行重启。因此更新安装会实际影响当前实验服务，应在无发布或验收进程运行时执行。
+加上 `--check` 可以预览父、子服务的操作。安装器要求发布状态为 idle，检查 unit 文件、开机设置、服务状态和预期容器。配置一致且运行正常时，再次执行输出 `SRE_LAB_SYSTEMD_CHANGED=0`。主 unit 更新或预期容器缺失时会重启整栈，仅自愈 unit 更新时重启自愈器。涉及重启的更新应与发布及故障演练错开。使用 Ansible 远程执行和复查的方法见[部署手册](ansible-deploy.md)。
 
 新的自愈单元是 static 子服务，不再独立 enable。原来的独立启动关系由安装流程迁移；以后只为 `sre-lab` 设置开机启动。
 

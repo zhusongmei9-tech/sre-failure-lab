@@ -1,0 +1,154 @@
+---
+- name: Check for project volumes before creating a deployment record
+  ansible.builtin.command: docker volume ls -q --filter label=com.docker.compose.project=sre-lab
+  register: sre_volumes
+  check_mode: false
+  changed_when: false
+
+- name: Detect orphaned deployment files
+  ansible.builtin.stat:
+    path: "{{ sre_root }}/runtime"
+  register: sre_runtime
+
+- name: Refuse to initialize over signs of a previous runtime
+  ansible.builtin.assert:
+    that:
+      - not sre_runtime.stat.exists
+      - not sre_containers.stdout_lines
+      - not sre_volumes.stdout_lines
+    fail_msg: Existing runtime files, project containers or volumes lack state.json. Inspect or restore the deployment record before initializing.
+
+- name: Prepare missing source from a controller-side release tarball
+  when: not sre_compose.stat.exists
+  block:
+    - name: Require a source release for a bare host
+      ansible.builtin.assert:
+        that: sre_source_archive | default('') | length > 0
+        fail_msg: Stage the source in /opt/sre-failure-lab or set sre_source_archive to a trusted local release tar.gz.
+
+    - name: Check controller-side archive availability
+      ansible.builtin.stat:
+        path: "{{ sre_source_archive }}"
+        get_checksum: false
+      become: false
+      delegate_to: localhost
+      register: sre_archive
+
+    - name: Require a readable release archive
+      ansible.builtin.assert:
+        that: sre_archive.stat.isreg | default(false) and sre_archive.stat.readable | default(false)
+
+    - name: Inspect an existing installation directory with no source
+      ansible.builtin.find:
+        paths: "{{ sre_root }}"
+        file_type: any
+        hidden: true
+      when: sre_directory.stat.exists
+      register: sre_contents
+
+    - name: Refuse to replace a populated installation directory
+      ansible.builtin.assert:
+        that: (sre_contents.matched | default(0)) == 0
+
+    - name: Stage and then move the source tree into place
+      when: not ansible_check_mode
+      block:
+        - name: Allocate a temporary directory on the target filesystem
+          ansible.builtin.tempfile:
+            state: directory
+            path: /opt
+            prefix: .sre-source-
+          register: sre_staging
+
+        - name: Extract the archive with its top-level release directory removed
+          ansible.builtin.unarchive:
+            src: "{{ sre_source_archive }}"
+            dest: "{{ sre_staging.path }}"
+            extra_opts: [--strip-components=1]
+
+        - name: Verify the release layout before installing it
+          ansible.builtin.command:
+            argv: [test, -f, "{{ sre_staging.path }}/{{ item }}"]
+          changed_when: false
+          loop: [compose.runtime.yaml, scripts/init_env.py, ops/deploy.py, Dockerfile]
+
+        - name: Move the staged source to the final directory
+          ansible.builtin.command:
+            argv: [mv, -T, --, "{{ sre_staging.path }}", "{{ sre_root }}"]
+          changed_when: true
+      always:
+        - name: Clean up the temporary staging directory
+          ansible.builtin.file:
+            path: "{{ sre_staging.path }}"
+            state: absent
+          when: sre_staging.path is defined
+
+- name: Initialize the first runtime using the project's deployment entry point
+  when: not ansible_check_mode
+  block:
+    - name: Generate private credentials on the target if absent
+      ansible.builtin.command:
+        argv: [/usr/bin/python3, scripts/init_env.py]
+        chdir: "{{ sre_root }}"
+        creates: "{{ sre_root }}/.env"
+
+    - name: Read the bridge address used by node-exporter
+      ansible.builtin.command:
+        argv: [docker, network, inspect, bridge, --format, "{% raw %}{{(index .IPAM.Config 0).Gateway}}{% endraw %}"]
+      register: sre_gateway
+      changed_when: false
+
+    - name: Inspect the names of existing runtime settings
+      ansible.builtin.command:
+        argv:
+          - /usr/bin/python3
+          - -c
+          - |
+            from pathlib import Path
+            import re
+            for line in Path(".env").read_text().splitlines():
+                key = re.match(r"^\s*(?:export\s+)?(METRICS_HOST_GATEWAY|RUNTIME_BIND_HOST)\s*[=:]", line)
+                if key:
+                    print(key[1])
+        chdir: "{{ sre_root }}"
+      register: sre_defined_env
+      changed_when: false
+
+    - name: Add runtime defaults for any absent environment keys
+      ansible.builtin.lineinfile:
+        path: "{{ sre_root }}/.env"
+        insertafter: EOF
+        search_string: "{{ item }}"
+        line: "{{ item }}"
+        mode: '0600'
+      # Keep values already set by the operator. Never send .env contents to the controller.
+      when: item.split('=')[0] not in sre_defined_env.stdout_lines
+      loop:
+        - "METRICS_HOST_GATEWAY={{ sre_gateway.stdout }}"
+        - RUNTIME_BIND_HOST=127.0.0.1
+      no_log: true
+      diff: false
+
+    - name: Pull missing infrastructure images
+      ansible.builtin.command:
+        argv: [docker, compose, -f, compose.runtime.yaml, pull, --policy, missing, redis, edge, prometheus, grafana, node-exporter, cadvisor]
+        chdir: "{{ sre_root }}"
+      changed_when: true
+
+    - name: Inspect initial API image availability
+      ansible.builtin.command: docker image ls --quiet sre-lab-api:0.3.0
+      changed_when: false
+      register: sre_initial_image
+
+    - name: Build the initial application image when it is missing
+      ansible.builtin.command:
+        argv: [docker, build, --build-arg, APP_VERSION=0.3.0, -t, sre-lab-api:0.3.0, .]
+        chdir: "{{ sre_root }}"
+      when: not sre_initial_image.stdout
+      changed_when: true
+
+    - name: Initialize the blue slot exactly once
+      ansible.builtin.command:
+        argv: [/usr/bin/python3, -m, ops.deploy, init, --image, sre-lab-api:0.3.0]
+        chdir: "{{ sre_root }}"
+        creates: "{{ sre_root }}/runtime/state.json"

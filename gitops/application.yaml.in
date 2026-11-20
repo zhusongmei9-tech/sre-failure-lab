@@ -1,0 +1,43 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: sre-lab-demo
+  namespace: argocd
+spec:
+  description: Reconcile the lab demo Deployment and Service from its dedicated Git repository
+  sourceRepos:
+    - LAB_REPOSITORY_URL
+  destinations:
+    - server: https://kubernetes.default.svc
+      namespace: sre-k8s-demo
+  clusterResourceBlacklist:
+    - group: '*'
+      kind: '*'
+  namespaceResourceWhitelist:
+    - group: apps
+      kind: Deployment
+    - group: ''
+      kind: Service
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: sre-lab-demo
+  namespace: argocd
+spec:
+  project: sre-lab-demo
+  source:
+    repoURL: LAB_REPOSITORY_URL
+    targetRevision: main
+    path: workload
+    directory:
+      include: demo.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: sre-k8s-demo
+  syncPolicy:
+    automated:
+      prune: false
+      selfHeal: true
+    syncOptions:
+      - FailOnSharedResource=true
